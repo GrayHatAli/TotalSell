@@ -1,4 +1,4 @@
-@TotalSell.Report.API_HostAddress = http://localhost:5135
+@TotalSell.Report.API_HostAddress = http://localhost:5144
 
 GET {{TotalSell.Report.API_HostAddress}}/weatherforecast/
 Accept: application/json
