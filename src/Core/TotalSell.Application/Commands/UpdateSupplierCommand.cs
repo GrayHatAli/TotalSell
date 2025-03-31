@@ -2,8 +2,9 @@ using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateCustomerCommand : BaseCommand
+public class UpdateSupplierCommand : BaseCommand
 {
+    public new Guid Id { get; set; }
     public string Name { get; set; } = null!;
     public string Code { get; set; } = null!;
     public string? NationalCode { get; set; }
@@ -14,4 +15,5 @@ public class CreateCustomerCommand : BaseCommand
     public string? Address { get; set; }
     public string? PostalCode { get; set; }
     public string? Description { get; set; }
+    public bool IsActive { get; set; }
 } 

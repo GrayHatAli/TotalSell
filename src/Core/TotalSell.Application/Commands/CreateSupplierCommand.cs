@@ -2,7 +2,7 @@ using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateCustomerCommand : BaseCommand
+public class CreateSupplierCommand : BaseCommand
 {
     public string Name { get; set; } = null!;
     public string Code { get; set; } = null!;
