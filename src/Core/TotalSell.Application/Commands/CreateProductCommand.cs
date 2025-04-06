@@ -1,14 +1,22 @@
+using MediatR;
 using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateProductCommand : BaseCommand
+public class CreateProductCommand : BaseCommand, IRequest<Guid>
 {
     public string Name { get; set; } = null!;
     public string Code { get; set; } = null!;
     public string? Description { get; set; }
-    public decimal UnitPrice { get; set; }
-    public string Unit { get; set; } = null!;
-    public Guid CategoryId { get; set; }
-    public Guid BrandId { get; set; }
+    public decimal Price { get; set; }
+    public decimal? DiscountedPrice { get; set; }
+    public string? Barcode { get; set; }
+    public string? SKU { get; set; }
+    public string? Brand { get; set; }
+    public string? Category { get; set; }
+    public string? Unit { get; set; }
+    public decimal StockQuantity { get; set; }
+    public decimal MinimumStockQuantity { get; set; }
+    public bool IsActive { get; set; } = true;
+    public List<string> Tags { get; set; } = new();
 } 

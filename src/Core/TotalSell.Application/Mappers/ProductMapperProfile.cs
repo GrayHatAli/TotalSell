@@ -1,4 +1,5 @@
 using AutoMapper;
+using TotalSell.Application.Commands;
 using TotalSell.Application.DTOs;
 using TotalSell.Domain.Entities;
 namespace TotalSell.Application.Mappers;
@@ -7,10 +8,40 @@ public class ProductMapperProfile : Profile
 {
     public ProductMapperProfile()
     {
-        CreateMap<Product, ProductDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
-            .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.Name : null))
-            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => src.ProductTags != null ? src.ProductTags.Select(pt => pt.Tag != null ? pt.Tag.Name : null).Where(name => name != null) : null))
-            .ReverseMap();
+        CreateMap<CreateProductCommand, Product>()
+            .ConstructUsing((src, ctx) => Product.Create(
+                src.Name,
+                src.Code,
+                src.Description,
+                src.Price,
+                src.DiscountedPrice,
+                src.Barcode,
+                src.SKU,
+                src.Brand,
+                src.Category,
+                src.Unit,
+                src.StockQuantity,
+                src.MinimumStockQuantity,
+                src.IsActive,
+                src.Tags));
+
+        CreateMap<UpdateProductCommand, Product>()
+            .ConstructUsing((src, ctx) => Product.Create(
+                src.Name,
+                src.Code,
+                src.Description,
+                src.Price,
+                src.DiscountedPrice,
+                src.Barcode,
+                src.SKU,
+                src.Brand,
+                src.Category,
+                src.Unit,
+                src.StockQuantity,
+                src.MinimumStockQuantity,
+                src.IsActive,
+                src.Tags));
+
+        CreateMap<Product, ProductDto>();
     }
 } 

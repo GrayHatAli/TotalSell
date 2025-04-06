@@ -7,20 +7,18 @@ public class ProductDto
     public string Code { get; set; } = null!;
     public string? Description { get; set; }
     public decimal Price { get; set; }
-    public decimal Cost { get; set; }
+    public decimal? DiscountedPrice { get; set; }
     public string? Barcode { get; set; }
+    public string? SKU { get; set; }
+    public string? Brand { get; set; }
+    public string? Category { get; set; }
     public string? Unit { get; set; }
-    public decimal MinimumStock { get; set; }
-    public decimal MaximumStock { get; set; }
-    public decimal ReorderPoint { get; set; }
-    public Guid CategoryId { get; set; }
-    public string CategoryName { get; set; } = null!;
-    public Guid BrandId { get; set; }
-    public string BrandName { get; set; } = null!;
-    public IEnumerable<string> Tags { get; set; } = new List<string>();
+    public decimal StockQuantity { get; set; }
+    public decimal MinimumStockQuantity { get; set; }
     public bool IsActive { get; set; }
+    public List<string> Tags { get; set; } = new();
     public DateTime CreatedAt { get; set; }
     public string CreatedBy { get; set; } = null!;
-    public DateTime? UpdatedAt { get; set; }
-    public string? UpdatedBy { get; set; }
+    public DateTime? LastModifiedAt { get; set; }
+    public string? LastModifiedBy { get; set; }
 } 
