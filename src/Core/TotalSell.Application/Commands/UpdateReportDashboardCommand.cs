@@ -15,17 +15,4 @@ public class UpdateReportDashboardCommand : BaseCommand
     public string? Filters { get; set; }
     public int? RefreshInterval { get; set; }
     public bool IsActive { get; set; }
-}
-
-public class UpdateReportDashboardItemCommand
-{
-    public Guid Id { get; set; }
-    public Guid ReportId { get; set; }
-    public string Title { get; set; } = null!;
-    public string Type { get; set; } = null!;
-    public string? Parameters { get; set; }
-    public string? Filters { get; set; }
-    public string? Layout { get; set; }
-    public int Order { get; set; }
-    public bool IsActive { get; set; }
 } 

@@ -12,4 +12,5 @@ public class CreateReportDashboardVersionCommand : BaseCommand
     public string? Parameters { get; set; }
     public string? Filters { get; set; }
     public int? RefreshInterval { get; set; }
+    public bool IsActive { get; set; } = true;
 } 
