@@ -3,10 +3,13 @@ using TotalSell.Application.Commands;
 
 namespace TotalSell.Application.Validators;
 
-public class CreateReportCommandValidator : AbstractValidator<CreateReportCommand>
+public class UpdateReportCommandValidator : AbstractValidator<UpdateReportCommand>
 {
-    public CreateReportCommandValidator()
+    public UpdateReportCommandValidator()
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("شناسه گزارش الزامی است");
+
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("نام گزارش الزامی است")
             .MaximumLength(100).WithMessage("نام گزارش نمی‌تواند بیشتر از 100 کاراکتر باشد");
