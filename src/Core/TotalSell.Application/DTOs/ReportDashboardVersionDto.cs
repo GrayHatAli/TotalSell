@@ -1,10 +1,9 @@
 namespace TotalSell.Application.DTOs;
 
-public class ReportDashboardVersionDto
+public class ReportDashboardVersionDto : BaseDto
 {
-    public Guid Id { get; set; }
     public Guid DashboardId { get; set; }
-    public string? Version { get; set; }
+    public string Version { get; set; } = null!;
     public string? Description { get; set; }
     public string? Layout { get; set; }
     public string? Theme { get; set; }
@@ -18,8 +17,4 @@ public class ReportDashboardVersionDto
     public DateTime? RejectedDate { get; set; }
     public string? RejectionReason { get; set; }
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public string? CreatedBy { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? UpdatedBy { get; set; }
 } 
