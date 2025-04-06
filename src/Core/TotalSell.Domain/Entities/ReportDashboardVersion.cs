@@ -1,24 +1,25 @@
+using System;
 using TotalSell.Domain.Common;
 
 namespace TotalSell.Domain.Entities;
 
 public class ReportDashboardVersion : BaseEntity
 {
-    public Guid DashboardId { get; private set; }
-    public string Version { get; private set; } = null!;
-    public string? Description { get; private set; }
-    public string? Layout { get; private set; }
-    public string? Theme { get; private set; }
-    public string? Parameters { get; private set; }
-    public string? Filters { get; private set; }
-    public int? RefreshInterval { get; private set; }
-    public string? Status { get; private set; }
-    public string? ApprovedBy { get; private set; }
-    public DateTime? ApprovedDate { get; private set; }
-    public string? RejectedBy { get; private set; }
-    public DateTime? RejectedDate { get; private set; }
-    public string? RejectionReason { get; private set; }
-    public bool IsActive { get; private set; }
+    public Guid DashboardId { get; set; }
+    public string Version { get; set; } = null!;
+    public string? Description { get; set; }
+    public string? Layout { get; set; }
+    public string? Theme { get; set; }
+    public string? Parameters { get; set; }
+    public string? Filters { get; set; }
+    public int? RefreshInterval { get; set; }
+    public string? Status { get; set; }
+    public string? ApprovedBy { get; set; }
+    public DateTime? ApprovedDate { get; set; }
+    public string? RejectedBy { get; set; }
+    public DateTime? RejectedDate { get; set; }
+    public string? RejectionReason { get; set; }
+    public bool IsActive { get; set; }
 
     private ReportDashboardVersion() { }
 
