@@ -2,11 +2,11 @@ namespace TotalSell.Domain.Entities;
 
 public class Category : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
     public Guid? ParentId { get; private set; }
-    public Category Parent { get; private set; }
+    public Category? Parent { get; private set; }
     public ICollection<Category> Children { get; private set; }
     public bool IsActive { get; private set; }
 

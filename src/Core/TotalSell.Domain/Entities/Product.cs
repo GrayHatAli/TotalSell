@@ -2,15 +2,15 @@ namespace TotalSell.Domain.Entities;
 
 public class Product : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
     public decimal UnitPrice { get; private set; }
-    public string Unit { get; private set; }
+    public string Unit { get; private set; } = string.Empty;
     public Guid CategoryId { get; private set; }
-    public Category Category { get; private set; }
+    public Category? Category { get; private set; }
     public Guid BrandId { get; private set; }
-    public Brand Brand { get; private set; }
+    public Brand? Brand { get; private set; }
     public ICollection<ProductTag> ProductTags { get; private set; }
     public bool IsActive { get; private set; }
 

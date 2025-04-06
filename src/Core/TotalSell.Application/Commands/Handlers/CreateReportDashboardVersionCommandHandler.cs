@@ -16,15 +16,15 @@ public class CreateReportDashboardVersionCommandHandler : IRequestHandler<Create
 
     public async Task<Guid> Handle(CreateReportDashboardVersionCommand request, CancellationToken cancellationToken)
     {
-        var version = new ReportDashboardVersion(
+        var version = ReportDashboardVersion.Create(
             request.DashboardId,
             request.Version,
-            request.Description ?? "",
-            request.Layout ?? "",
-            request.Theme ?? "",
-            request.Parameters ?? "",
-            request.Filters ?? "",
-            request.RefreshInterval?.ToString() ?? "");
+            request.Description,
+            request.Layout,
+            request.Theme,
+            request.Parameters,
+            request.Filters,
+            request.RefreshInterval);
 
         _context.ReportDashboardVersions.Add(version);
         await _context.SaveChangesAsync(cancellationToken);
