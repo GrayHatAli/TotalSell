@@ -8,49 +8,38 @@ public class CreateReportDashboardVersionCommandValidator : AbstractValidator<Cr
     public CreateReportDashboardVersionCommandValidator()
     {
         RuleFor(x => x.DashboardId)
-            .NotEmpty().WithMessage("شناسه داشبورد الزامی است");
+            .NotEmpty()
+            .WithMessage("شناسه داشبورد الزامی است");
 
         RuleFor(x => x.Version)
-            .NotEmpty().WithMessage("نسخه الزامی است")
-            .MaximumLength(20).WithMessage("نسخه نمی‌تواند بیشتر از 20 کاراکتر باشد")
-            .Matches("^[0-9]+\\.[0-9]+\\.[0-9]+$").WithMessage("نسخه باید در قالب x.y.z باشد");
+            .NotEmpty()
+            .WithMessage("نسخه الزامی است")
+            .MaximumLength(50)
+            .WithMessage("نسخه نمی‌تواند بیشتر از 50 کاراکتر باشد");
 
         RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("توضیحات نمی‌تواند بیشتر از 500 کاراکتر باشد")
-            .When(x => x.Description != null);
+            .MaximumLength(500)
+            .WithMessage("توضیحات نمی‌تواند بیشتر از 500 کاراکتر باشد");
 
         RuleFor(x => x.Layout)
-            .Must(BeValidJson).WithMessage("طرح‌بندی باید در قالب JSON معتبر باشد")
-            .When(x => x.Layout != null);
+            .MaximumLength(1000)
+            .WithMessage("طرح‌بندی نمی‌تواند بیشتر از 1000 کاراکتر باشد");
 
         RuleFor(x => x.Theme)
-            .MaximumLength(50).WithMessage("تم نمی‌تواند بیشتر از 50 کاراکتر باشد")
-            .When(x => x.Theme != null);
+            .MaximumLength(100)
+            .WithMessage("تم نمی‌تواند بیشتر از 100 کاراکتر باشد");
 
         RuleFor(x => x.Parameters)
-            .Must(BeValidJson).WithMessage("پارامترها باید در قالب JSON معتبر باشند")
-            .When(x => x.Parameters != null);
+            .MaximumLength(1000)
+            .WithMessage("پارامترها نمی‌تواند بیشتر از 1000 کاراکتر باشد");
 
         RuleFor(x => x.Filters)
-            .Must(BeValidJson).WithMessage("فیلترها باید در قالب JSON معتبر باشند")
-            .When(x => x.Filters != null);
+            .MaximumLength(1000)
+            .WithMessage("فیلترها نمی‌تواند بیشتر از 1000 کاراکتر باشد");
 
         RuleFor(x => x.RefreshInterval)
-            .GreaterThan(0).WithMessage("فاصله زمانی به‌روزرسانی باید بزرگتر از صفر باشد")
-            .When(x => x.RefreshInterval.HasValue);
-    }
-
-    private static bool BeValidJson(string? json)
-    {
-        if (string.IsNullOrEmpty(json)) return true;
-        try
-        {
-            System.Text.Json.JsonDocument.Parse(json);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+            .GreaterThan(0)
+            .When(x => x.RefreshInterval.HasValue)
+            .WithMessage("فاصله بروزرسانی باید بزرگتر از 0 باشد");
     }
 } 
