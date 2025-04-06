@@ -1,6 +1,9 @@
+using MediatR;
+using TotalSell.Application.Common;
+
 namespace TotalSell.Application.Commands;
 
-public class DeleteCustomerCommand : BaseCommand
+public class DeleteCustomerCommand : BaseCommand, IRequest<Unit>
 {
-    public new Guid Id { get; set; }
+    public Guid Id { get; set; }
 } 

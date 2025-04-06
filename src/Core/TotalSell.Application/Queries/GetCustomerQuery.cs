@@ -1,6 +1,10 @@
+using MediatR;
+using TotalSell.Application.Common;
+using TotalSell.Application.DTOs;
+
 namespace TotalSell.Application.Queries;
 
-public class GetCustomerQuery : BaseQuery
+public class GetCustomerQuery : BaseQuery, IRequest<CustomerDto>
 {
-    public Guid CustomerId { get; set; }
+    public Guid Id { get; set; }
 } 
