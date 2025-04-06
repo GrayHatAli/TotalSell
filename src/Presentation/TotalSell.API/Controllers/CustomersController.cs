@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using TotalSell.Application.Commands;
 using TotalSell.Application.Queries;
 using TotalSell.Application.DTOs;
+using MediatR;
 
 namespace TotalSell.API.Controllers;
 
