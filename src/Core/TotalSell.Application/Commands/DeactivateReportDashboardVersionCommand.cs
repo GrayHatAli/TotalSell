@@ -3,8 +3,7 @@ using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class ApproveReportDashboardVersionCommand : IRequest<Unit>
+public class DeactivateReportDashboardVersionCommand : IRequest<Unit>
 {
     public Guid Id { get; set; }
-    public string ApprovedBy { get; set; } = null!;
 } 
