@@ -2,7 +2,7 @@ using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Queries;
 
-public class GetInvoiceQuery : BaseQuery
+public class GetProductQuery : BaseQuery
 {
-    public Guid InvoiceId { get; set; }
+    public Guid ProductId { get; set; }
 } 
