@@ -1,8 +1,10 @@
+using MediatR;
 using TotalSell.Application.Common;
+using TotalSell.Application.DTOs;
 
 namespace TotalSell.Application.Queries;
 
-public class SearchReportDashboardVersionsQuery : BaseQuery
+public class SearchReportDashboardVersionsQuery : BaseQuery, IRequest<PagedResult<ReportDashboardVersionSummaryDto>>
 {
     public string? SearchTerm { get; set; }
     public Guid? DashboardId { get; set; }
