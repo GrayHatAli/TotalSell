@@ -7,12 +7,13 @@ public class CreateReportDashboardCommand : BaseCommand
     public string Name { get; set; } = null!;
     public string Code { get; set; } = null!;
     public string? Description { get; set; }
+    public Guid ReportId { get; set; }
     public string? Layout { get; set; }
     public string? Theme { get; set; }
     public string? Parameters { get; set; }
     public string? Filters { get; set; }
     public int? RefreshInterval { get; set; }
-    public IEnumerable<CreateReportDashboardItemCommand> Items { get; set; } = new List<CreateReportDashboardItemCommand>();
+    public bool IsActive { get; set; } = true;
 }
 
 public class CreateReportDashboardItemCommand
