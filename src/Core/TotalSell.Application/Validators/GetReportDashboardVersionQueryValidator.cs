@@ -8,6 +8,7 @@ public class GetReportDashboardVersionQueryValidator : AbstractValidator<GetRepo
     public GetReportDashboardVersionQueryValidator()
     {
         RuleFor(x => x.VersionId)
-            .NotEmpty().WithMessage("شناسه نسخه الزامی است");
+            .NotEmpty()
+            .WithMessage("شناسه نسخه الزامی است");
     }
 } 
