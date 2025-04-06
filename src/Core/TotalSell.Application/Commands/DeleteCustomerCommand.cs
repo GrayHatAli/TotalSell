@@ -4,5 +4,5 @@ namespace TotalSell.Application.Commands;
 
 public class DeleteCustomerCommand : BaseCommand
 {
-    public Guid Id { get; set; }
+    public new Guid Id { get; set; }
 } 
