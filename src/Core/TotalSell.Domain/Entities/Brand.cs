@@ -2,10 +2,10 @@ namespace TotalSell.Domain.Entities;
 
 public class Brand : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
-    public string LogoUrl { get; private set; }
+    public string Name { get; private set; } = null!;
+    public string Code { get; private set; } = null!;
+    public string Description { get; private set; } = null!;
+    public string? LogoUrl { get; private set; }
     public bool IsActive { get; private set; }
 
     private Brand() { }
@@ -14,7 +14,7 @@ public class Brand : BaseEntity
         string name,
         string code,
         string description,
-        string logoUrl = null)
+        string? logoUrl = null)
     {
         Name = name;
         Code = code;
@@ -27,7 +27,7 @@ public class Brand : BaseEntity
         string name,
         string code,
         string description,
-        string logoUrl = null)
+        string? logoUrl = null)
     {
         Name = name;
         Code = code;

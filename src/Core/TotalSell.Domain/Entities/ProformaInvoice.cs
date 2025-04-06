@@ -3,16 +3,16 @@ namespace TotalSell.Domain.Entities;
 public class ProformaInvoice : Invoice
 {
     public Guid CustomerId { get; private set; }
-    public Customer Customer { get; private set; }
-    public string ReferenceNumber { get; private set; }
+    public Customer? Customer { get; private set; }
+    public string ReferenceNumber { get; private set; } = string.Empty;
     public DateTime? ReferenceDate { get; private set; }
-    public string PaymentMethod { get; private set; }
-    public string BankName { get; private set; }
-    public string BankAccountNumber { get; private set; }
-    public string BankCardNumber { get; private set; }
-    public string TrackingCode { get; private set; }
+    public string PaymentMethod { get; private set; } = string.Empty;
+    public string BankName { get; private set; } = string.Empty;
+    public string BankAccountNumber { get; private set; } = string.Empty;
+    public string BankCardNumber { get; private set; } = string.Empty;
+    public string TrackingCode { get; private set; } = string.Empty;
     public DateTime? ValidUntil { get; private set; }
-    public string TermsAndConditions { get; private set; }
+    public string TermsAndConditions { get; private set; } = string.Empty;
 
     private ProformaInvoice() { }
 
@@ -20,32 +20,32 @@ public class ProformaInvoice : Invoice
         string number,
         DateTime date,
         Guid customerId,
-        string referenceNumber = null,
+        string? referenceNumber = null,
         DateTime? referenceDate = null,
-        string description = null,
-        string paymentTerms = null,
+        string? description = null,
+        string? paymentTerms = null,
         DateTime? dueDate = null,
-        string paymentMethod = null,
-        string bankName = null,
-        string bankAccountNumber = null,
-        string bankCardNumber = null,
+        string? paymentMethod = null,
+        string? bankName = null,
+        string? bankAccountNumber = null,
+        string? bankCardNumber = null,
         DateTime? validUntil = null,
-        string termsAndConditions = null)
+        string? termsAndConditions = null)
     {
         Number = number;
         Date = date;
         CustomerId = customerId;
-        ReferenceNumber = referenceNumber;
+        ReferenceNumber = referenceNumber ?? string.Empty;
         ReferenceDate = referenceDate;
-        Description = description;
-        PaymentTerms = paymentTerms;
+        Description = description ?? string.Empty;
+        PaymentTerms = paymentTerms ?? string.Empty;
         DueDate = dueDate;
-        PaymentMethod = paymentMethod;
-        BankName = bankName;
-        BankAccountNumber = bankAccountNumber;
-        BankCardNumber = bankCardNumber;
+        PaymentMethod = paymentMethod ?? string.Empty;
+        BankName = bankName ?? string.Empty;
+        BankAccountNumber = bankAccountNumber ?? string.Empty;
+        BankCardNumber = bankCardNumber ?? string.Empty;
         ValidUntil = validUntil;
-        TermsAndConditions = termsAndConditions;
+        TermsAndConditions = termsAndConditions ?? string.Empty;
         Status = "Draft";
     }
 
@@ -55,7 +55,7 @@ public class ProformaInvoice : Invoice
         decimal unitPrice,
         decimal discountAmount = 0,
         decimal taxAmount = 0,
-        string description = null)
+        string? description = null)
     {
         var item = new InvoiceItem(
             Id,

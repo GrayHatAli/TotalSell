@@ -3,17 +3,17 @@ namespace TotalSell.Domain.Entities;
 public class Payment : BaseEntity
 {
     public Guid InvoiceId { get; private set; }
-    public Invoice Invoice { get; private set; }
+    public Invoice? Invoice { get; private set; }
     public decimal Amount { get; private set; }
     public DateTime PaymentDate { get; private set; }
-    public string PaymentMethod { get; private set; }
-    public string BankName { get; private set; }
-    public string BankAccountNumber { get; private set; }
-    public string BankCardNumber { get; private set; }
-    public string ReferenceNumber { get; private set; }
+    public string PaymentMethod { get; private set; } = string.Empty;
+    public string BankName { get; private set; } = string.Empty;
+    public string BankAccountNumber { get; private set; } = string.Empty;
+    public string BankCardNumber { get; private set; } = string.Empty;
+    public string ReferenceNumber { get; private set; } = string.Empty;
     public DateTime? ReferenceDate { get; private set; }
-    public string Description { get; private set; }
-    public string Status { get; private set; }
+    public string Description { get; private set; } = string.Empty;
+    public string Status { get; private set; } = string.Empty;
 
     private Payment() { }
 
@@ -25,9 +25,9 @@ public class Payment : BaseEntity
         string bankName,
         string bankAccountNumber,
         string bankCardNumber,
-        string referenceNumber = null,
+        string? referenceNumber = null,
         DateTime? referenceDate = null,
-        string description = null)
+        string? description = null)
     {
         InvoiceId = invoiceId;
         Amount = amount;
@@ -36,9 +36,9 @@ public class Payment : BaseEntity
         BankName = bankName;
         BankAccountNumber = bankAccountNumber;
         BankCardNumber = bankCardNumber;
-        ReferenceNumber = referenceNumber;
+        ReferenceNumber = referenceNumber ?? string.Empty;
         ReferenceDate = referenceDate;
-        Description = description;
+        Description = description ?? string.Empty;
         Status = "Pending";
     }
 

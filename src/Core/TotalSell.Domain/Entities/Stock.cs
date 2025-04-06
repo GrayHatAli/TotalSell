@@ -3,13 +3,13 @@ namespace TotalSell.Domain.Entities;
 public class Stock : BaseEntity
 {
     public Guid ProductId { get; private set; }
-    public Product Product { get; private set; }
+    public Product? Product { get; private set; }
     public decimal Quantity { get; private set; }
     public decimal UnitPrice { get; private set; }
-    public string Location { get; private set; }
-    public string BatchNumber { get; private set; }
+    public string Location { get; private set; } = string.Empty;
+    public string? BatchNumber { get; private set; } = string.Empty;
     public DateTime? ExpiryDate { get; private set; }
-    public string Status { get; private set; }
+    public string Status { get; private set; } = string.Empty;
 
     private Stock() { }
 
@@ -18,7 +18,7 @@ public class Stock : BaseEntity
         decimal quantity,
         decimal unitPrice,
         string location,
-        string batchNumber = null,
+        string? batchNumber = null,
         DateTime? expiryDate = null)
     {
         ProductId = productId;
