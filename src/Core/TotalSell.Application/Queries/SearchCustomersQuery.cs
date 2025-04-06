@@ -1,8 +1,10 @@
+using MediatR;
 using TotalSell.Application.Common;
+using TotalSell.Application.DTOs;
 
 namespace TotalSell.Application.Queries;
 
-public class SearchCustomersQuery : BaseQuery
+public class SearchCustomersQuery : BaseQuery, IRequest<IEnumerable<CustomerDto>>
 {
     public string? Name { get; set; }
     public string? Code { get; set; }

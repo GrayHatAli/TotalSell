@@ -5,6 +5,7 @@ namespace TotalSell.Application.Common;
 
 public interface IApplicationDbContext
 {
+    DbSet<Customer> Customers { get; set; }
     DbSet<ReportCategory> ReportCategories { get; set; }
     DbSet<Report> Reports { get; set; }
     DbSet<ReportDashboard> ReportDashboards { get; set; }
