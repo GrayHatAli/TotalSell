@@ -1,6 +1,8 @@
+using MediatR;
+
 namespace TotalSell.Application.Commands;
 
-public class CreateReportDashboardVersionCommand : BaseCommand
+public class CreateReportDashboardVersionCommand : BaseCommand, IRequest<Guid>
 {
     public Guid DashboardId { get; set; }
     public string Version { get; set; } = null!;
