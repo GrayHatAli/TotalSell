@@ -8,16 +8,11 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
 {
     public ApplicationDbContext CreateDbContext(string[] args)
     {
-        IConfigurationRoot configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json")
-            .Build();
-
-        var builder = new DbContextOptionsBuilder<ApplicationDbContext>();
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+        var connectionString = "Host=localhost;Database=TotalSellDb;Username=grayhat;Password=";
         
-        builder.UseNpgsql(connectionString);
+        optionsBuilder.UseNpgsql(connectionString);
 
-        return new ApplicationDbContext(builder.Options);
+        return new ApplicationDbContext(optionsBuilder.Options);
     }
 } 
