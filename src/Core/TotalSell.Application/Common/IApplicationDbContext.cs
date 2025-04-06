@@ -9,7 +9,7 @@ public interface IApplicationDbContext
     DbSet<Report> Reports { get; set; }
     DbSet<ReportDashboard> ReportDashboards { get; set; }
     DbSet<ReportDashboardItem> ReportDashboardItems { get; set; }
-    DbSet<ReportDashboardVersion> ReportDashboardVersions { get; set; }
+    DbSet<ReportDashboardVersion> ReportDashboardVersions { get; }
     DbSet<ReportVersion> ReportVersions { get; set; }
     DbSet<ReportView> ReportViews { get; set; }
     DbSet<ReportFavorite> ReportFavorites { get; set; }
@@ -22,5 +22,5 @@ public interface IApplicationDbContext
     DbSet<ReportDashboardSchedule> ReportDashboardSchedules { get; set; }
     DbSet<ReportSubscription> ReportSubscriptions { get; set; }
     DbSet<ReportDashboardSubscription> ReportDashboardSubscriptions { get; set; }
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 } 

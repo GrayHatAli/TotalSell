@@ -6,7 +6,8 @@ namespace TotalSell.Infrastructure.Persistence;
 
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
     }
 
@@ -14,7 +15,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Report> Reports { get; set; }
     public DbSet<ReportDashboard> ReportDashboards { get; set; }
     public DbSet<ReportDashboardItem> ReportDashboardItems { get; set; }
-    public DbSet<ReportDashboardVersion> ReportDashboardVersions { get; set; }
+    public DbSet<ReportDashboardVersion> ReportDashboardVersions => Set<ReportDashboardVersion>();
     public DbSet<ReportVersion> ReportVersions { get; set; }
     public DbSet<ReportView> ReportViews { get; set; }
     public DbSet<ReportFavorite> ReportFavorites { get; set; }
@@ -30,7 +31,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
-        // Add any additional model configurations here
     }
 } 

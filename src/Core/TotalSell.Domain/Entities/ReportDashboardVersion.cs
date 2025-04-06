@@ -1,16 +1,17 @@
+using TotalSell.Domain.Common;
+
 namespace TotalSell.Domain.Entities;
 
 public class ReportDashboardVersion : BaseEntity
 {
     public Guid DashboardId { get; private set; }
-    public ReportDashboard? Dashboard { get; private set; }
-    public string? Version { get; private set; }
+    public string Version { get; private set; } = null!;
     public string? Description { get; private set; }
     public string? Layout { get; private set; }
     public string? Theme { get; private set; }
     public string? Parameters { get; private set; }
     public string? Filters { get; private set; }
-    public string? RefreshInterval { get; private set; }
+    public int? RefreshInterval { get; private set; }
     public string? Status { get; private set; }
     public string? ApprovedBy { get; private set; }
     public DateTime? ApprovedDate { get; private set; }
@@ -21,43 +22,45 @@ public class ReportDashboardVersion : BaseEntity
 
     private ReportDashboardVersion() { }
 
-    public ReportDashboardVersion(
+    public static ReportDashboardVersion Create(
         Guid dashboardId,
         string version,
-        string description,
-        string layout,
-        string theme,
-        string parameters,
-        string filters,
-        string refreshInterval)
+        string? description = null,
+        string? layout = null,
+        string? theme = null,
+        string? parameters = null,
+        string? filters = null,
+        int? refreshInterval = null)
     {
-        DashboardId = dashboardId;
-        Version = version;
-        Description = description;
-        Layout = layout;
-        Theme = theme;
-        Parameters = parameters;
-        Filters = filters;
-        RefreshInterval = refreshInterval;
-        Status = "Draft";
-        IsActive = true;
+        return new ReportDashboardVersion
+        {
+            DashboardId = dashboardId,
+            Version = version,
+            Description = description,
+            Layout = layout,
+            Theme = theme,
+            Parameters = parameters,
+            Filters = filters,
+            RefreshInterval = refreshInterval,
+            Status = "Draft",
+            IsActive = false
+        };
     }
 
     public void UpdateDetails(
-        string description,
-        string layout,
-        string theme,
-        string parameters,
-        string filters,
-        string refreshInterval)
+        string? description,
+        string? layout,
+        string? theme,
+        string? parameters,
+        string? filters,
+        string? refreshInterval)
     {
         Description = description;
         Layout = layout;
         Theme = theme;
         Parameters = parameters;
         Filters = filters;
-        RefreshInterval = refreshInterval;
-        UpdatedAt = DateTime.UtcNow;
+        RefreshInterval = refreshInterval != null ? int.Parse(refreshInterval) : null;
     }
 
     public void Approve(string approvedBy)
@@ -65,7 +68,6 @@ public class ReportDashboardVersion : BaseEntity
         Status = "Approved";
         ApprovedBy = approvedBy;
         ApprovedDate = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Reject(string rejectedBy, string rejectionReason)
@@ -74,18 +76,15 @@ public class ReportDashboardVersion : BaseEntity
         RejectedBy = rejectedBy;
         RejectedDate = DateTime.UtcNow;
         RejectionReason = rejectionReason;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void Deactivate()
-    {
-        IsActive = false;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     public void Activate()
     {
         IsActive = true;
-        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Deactivate()
+    {
+        IsActive = false;
     }
 } 
