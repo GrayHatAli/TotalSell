@@ -2,7 +2,7 @@ namespace TotalSell.Domain.ValueObjects;
 
 public class Email : ValueObject
 {
-    public string Value { get; private set; }
+    public string Value { get; private set; } = string.Empty;
 
     private Email() { }
 

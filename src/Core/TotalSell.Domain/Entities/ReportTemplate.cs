@@ -3,12 +3,12 @@ namespace TotalSell.Domain.Entities;
 public class ReportTemplate : BaseEntity
 {
     public Guid ReportId { get; private set; }
-    public Report Report { get; private set; }
-    public string Name { get; private set; }
-    public string Description { get; private set; }
-    public string Content { get; private set; }
-    public string Format { get; private set; }
-    public string Parameters { get; private set; }
+    public Report? Report { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public string Content { get; private set; } = string.Empty;
+    public string Format { get; private set; } = string.Empty;
+    public string Parameters { get; private set; } = string.Empty;
     public bool IsDefault { get; private set; }
     public bool IsActive { get; private set; }
 

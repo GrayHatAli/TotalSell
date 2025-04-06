@@ -2,15 +2,15 @@ namespace TotalSell.Domain.Entities;
 
 public class Customer : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string NationalCode { get; private set; }
-    public string EconomicCode { get; private set; }
-    public string PhoneNumber { get; private set; }
-    public string MobileNumber { get; private set; }
-    public string Email { get; private set; }
-    public string Address { get; private set; }
-    public string PostalCode { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
+    public string NationalCode { get; private set; } = string.Empty;
+    public string EconomicCode { get; private set; } = string.Empty;
+    public string PhoneNumber { get; private set; } = string.Empty;
+    public string MobileNumber { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public string Address { get; private set; } = string.Empty;
+    public string PostalCode { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
 
     private Customer() { }

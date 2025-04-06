@@ -21,11 +21,11 @@ public class Address : ValueObject
 
     protected override IEnumerable<object> GetEqualityComponents()
     {
-        yield return Street;
-        yield return City;
-        yield return State;
-        yield return Country;
-        yield return PostalCode;
+        yield return Street ?? string.Empty;
+        yield return City ?? string.Empty;
+        yield return State ?? string.Empty;
+        yield return Country ?? string.Empty;
+        yield return PostalCode ?? string.Empty;
     }
 
     public override string ToString()
