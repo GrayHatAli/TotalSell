@@ -1,8 +1,9 @@
 using MediatR;
+using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateReportDashboardVersionCommand : BaseCommand, IRequest<Guid>
+public class CreateReportDashboardVersionCommand : IRequest<Guid>
 {
     public Guid DashboardId { get; set; }
     public string Version { get; set; } = null!;
@@ -12,5 +13,4 @@ public class CreateReportDashboardVersionCommand : BaseCommand, IRequest<Guid>
     public string? Parameters { get; set; }
     public string? Filters { get; set; }
     public int? RefreshInterval { get; set; }
-    public bool IsActive { get; set; } = true;
 } 

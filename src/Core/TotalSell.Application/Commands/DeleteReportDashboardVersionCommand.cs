@@ -1,8 +1,9 @@
 using MediatR;
+using TotalSell.Application.Common;
 
 namespace TotalSell.Application.Commands;
 
-public class DeleteReportDashboardVersionCommand : BaseCommand, IRequest<Unit>
+public class DeleteReportDashboardVersionCommand : IRequest<Unit>
 {
-    public new Guid Id { get; set; }
+    public Guid Id { get; set; }
 } 

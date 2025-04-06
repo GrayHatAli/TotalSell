@@ -11,16 +11,6 @@ public class UpdateReportDashboardVersionCommandValidator : AbstractValidator<Up
             .NotEmpty()
             .WithMessage("شناسه نسخه الزامی است");
 
-        RuleFor(x => x.DashboardId)
-            .NotEmpty()
-            .WithMessage("شناسه داشبورد الزامی است");
-
-        RuleFor(x => x.Version)
-            .NotEmpty()
-            .WithMessage("نسخه الزامی است")
-            .MaximumLength(50)
-            .WithMessage("نسخه نمی‌تواند بیشتر از 50 کاراکتر باشد");
-
         RuleFor(x => x.Description)
             .MaximumLength(500)
             .WithMessage("توضیحات نمی‌تواند بیشتر از 500 کاراکتر باشد");
@@ -44,6 +34,6 @@ public class UpdateReportDashboardVersionCommandValidator : AbstractValidator<Up
         RuleFor(x => x.RefreshInterval)
             .GreaterThan(0)
             .When(x => x.RefreshInterval.HasValue)
-            .WithMessage("فاصله بروزرسانی باید بزرگتر از 0 باشد");
+            .WithMessage("فاصله زمانی بروزرسانی باید بزرگتر از صفر باشد");
     }
 } 

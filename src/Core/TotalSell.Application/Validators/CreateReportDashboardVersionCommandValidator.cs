@@ -40,6 +40,6 @@ public class CreateReportDashboardVersionCommandValidator : AbstractValidator<Cr
         RuleFor(x => x.RefreshInterval)
             .GreaterThan(0)
             .When(x => x.RefreshInterval.HasValue)
-            .WithMessage("فاصله بروزرسانی باید بزرگتر از 0 باشد");
+            .WithMessage("فاصله زمانی بروزرسانی باید بزرگتر از صفر باشد");
     }
 } 
