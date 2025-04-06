@@ -2,9 +2,9 @@ namespace TotalSell.Domain.Entities;
 
 public class Tag : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Code { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
     public bool IsActive { get; private set; }
 
     private Tag() { }
@@ -12,22 +12,22 @@ public class Tag : BaseEntity
     public Tag(
         string name,
         string code,
-        string description = null)
+        string? description = null)
     {
         Name = name;
         Code = code;
-        Description = description;
+        Description = description ?? string.Empty;
         IsActive = true;
     }
 
     public void Update(
         string name,
         string code,
-        string description = null)
+        string? description = null)
     {
         Name = name;
         Code = code;
-        Description = description;
+        Description = description ?? string.Empty;
         UpdatedAt = DateTime.UtcNow;
     }
 

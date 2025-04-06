@@ -3,20 +3,20 @@ namespace TotalSell.Domain.Entities;
 public class ReportExecution : BaseEntity
 {
     public Guid ReportId { get; private set; }
-    public Report Report { get; private set; }
+    public Report? Report { get; private set; }
     public Guid? ScheduleId { get; private set; }
-    public ReportSchedule Schedule { get; private set; }
-    public string Parameters { get; private set; }
-    public string Format { get; private set; }
-    public string Status { get; private set; }
+    public ReportSchedule? Schedule { get; private set; }
+    public string Parameters { get; private set; } = string.Empty;
+    public string Format { get; private set; } = string.Empty;
+    public string Status { get; private set; } = string.Empty;
     public DateTime StartDate { get; private set; }
     public DateTime? EndDate { get; private set; }
-    public string Result { get; private set; }
-    public string ErrorMessage { get; private set; }
-    public string FilePath { get; private set; }
-    public string FileName { get; private set; }
+    public string Result { get; private set; } = string.Empty;
+    public string ErrorMessage { get; private set; } = string.Empty;
+    public string FilePath { get; private set; } = string.Empty;
+    public string FileName { get; private set; } = string.Empty;
     public long? FileSize { get; private set; }
-    public string FileType { get; private set; }
+    public string FileType { get; private set; } = string.Empty;
 
     private ReportExecution() { }
 

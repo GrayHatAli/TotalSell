@@ -1,66 +1,72 @@
+using System;
+using TotalSell.Domain.Common;
+
 namespace TotalSell.Domain.Entities;
 
 public class Report : BaseEntity
 {
-    public string Name { get; private set; }
-    public string Code { get; private set; }
-    public string Description { get; private set; }
-    public string ReportType { get; private set; }
-    public string Parameters { get; private set; }
-    public string Query { get; private set; }
-    public string Format { get; private set; }
-    public string Status { get; private set; }
-    public DateTime? LastRunDate { get; private set; }
-    public string LastRunBy { get; private set; }
-    public string LastRunResult { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Description { get; private set; } = string.Empty;
+    public string Category { get; private set; } = string.Empty;
+    public string Type { get; private set; } = string.Empty;
+    public string Query { get; private set; } = string.Empty;
+    public string Parameters { get; private set; } = string.Empty;
+    public string Format { get; private set; } = string.Empty;
+    public string Status { get; private set; } = string.Empty;
+    public bool IsActive { get; private set; }
 
     private Report() { }
 
     public Report(
         string name,
-        string code,
-        string description,
-        string reportType,
-        string parameters,
+        string category,
+        string type,
         string query,
-        string format)
+        string parameters,
+        string format,
+        string? description = null)
     {
         Name = name;
-        Code = code;
-        Description = description;
-        ReportType = reportType;
-        Parameters = parameters;
+        Description = description ?? string.Empty;
+        Category = category;
+        Type = type;
         Query = query;
+        Parameters = parameters;
         Format = format;
         Status = "Active";
+        IsActive = true;
     }
 
-    public void UpdateDetails(
+    public void Update(
         string name,
-        string description,
-        string parameters,
+        string category,
+        string type,
         string query,
-        string format)
+        string parameters,
+        string format,
+        string? description = null)
     {
         Name = name;
-        Description = description;
-        Parameters = parameters;
+        Description = description ?? string.Empty;
+        Category = category;
+        Type = type;
         Query = query;
+        Parameters = parameters;
         Format = format;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateStatus(string status)
+    public void Deactivate()
     {
-        Status = status;
+        IsActive = false;
+        Status = "Inactive";
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SetLastRun(string runBy, string result)
+    public void Activate()
     {
-        LastRunDate = DateTime.UtcNow;
-        LastRunBy = runBy;
-        LastRunResult = result;
+        IsActive = true;
+        Status = "Active";
         UpdatedAt = DateTime.UtcNow;
     }
 } 
