@@ -23,7 +23,7 @@ public class ProductsController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProduct(Guid id)
     {
-        var query = new GetProductQuery { ProductId = id };
+        var query = new GetProductQuery { Id = id };
         var result = await _mediator.Send(query);
         if (result == null)
             return NotFound();

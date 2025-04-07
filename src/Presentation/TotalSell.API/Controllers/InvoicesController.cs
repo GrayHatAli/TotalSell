@@ -23,7 +23,7 @@ public class InvoicesController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<InvoiceDto>> GetInvoice(Guid id)
     {
-        var query = new GetInvoiceQuery { InvoiceId = id };
+        var query = new GetInvoiceQuery { Id = id };
         var result = await _mediator.Send(query);
         if (result == null)
             return NotFound();

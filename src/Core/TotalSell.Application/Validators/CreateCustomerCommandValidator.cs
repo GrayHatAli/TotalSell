@@ -35,18 +35,11 @@ public class CreateCustomerCommandValidator : AbstractValidator<CreateCustomerCo
                 .EmailAddress().WithMessage("فرمت ایمیل صحیح نیست");
         });
 
-        When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber), () =>
+        When(x => !string.IsNullOrWhiteSpace(x.Phone), () =>
         {
-            RuleFor(x => x.PhoneNumber)
+            RuleFor(x => x.Phone)
                 .Matches("^[0-9]*$").WithMessage("شماره تلفن فقط می‌تواند شامل اعداد باشد")
                 .Length(11).WithMessage("شماره تلفن باید 11 رقم باشد");
-        });
-
-        When(x => !string.IsNullOrWhiteSpace(x.MobileNumber), () =>
-        {
-            RuleFor(x => x.MobileNumber)
-                .Matches("^[0-9]*$").WithMessage("شماره موبایل فقط می‌تواند شامل اعداد باشد")
-                .Length(11).WithMessage("شماره موبایل باید 11 رقم باشد");
         });
     }
 } 

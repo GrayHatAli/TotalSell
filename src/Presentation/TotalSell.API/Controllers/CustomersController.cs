@@ -23,7 +23,7 @@ public class CustomersController : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult<CustomerDto>> GetCustomer(Guid id)
     {
-        var query = new GetCustomerQuery { CustomerId = id };
+        var query = new GetCustomerQuery { Id = id };
         var result = await _mediator.Send(query);
         if (result == null)
             return NotFound();
@@ -40,7 +40,7 @@ public class CustomersController : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateCustomer(Guid id, UpdateCustomerCommand command)
     {
-        if (id != command.CustomerId)
+        if (id != command.Id)
             return BadRequest();
         
         await _mediator.Send(command);
