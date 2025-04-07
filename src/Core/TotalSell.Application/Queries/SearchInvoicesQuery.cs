@@ -10,7 +10,9 @@ public class SearchInvoicesQuery : BaseQuery, IRequest<IEnumerable<InvoiceDto>>
     public string? Number { get; set; }
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
+    public Guid? CustomerId { get; set; }
     public InvoiceStatus? Status { get; set; }
+    public InvoiceType? Type { get; set; }
     public decimal? MinTotal { get; set; }
     public decimal? MaxTotal { get; set; }
     public int PageNumber { get; set; } = 1;

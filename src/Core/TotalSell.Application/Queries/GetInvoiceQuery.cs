@@ -6,5 +6,5 @@ namespace TotalSell.Application.Queries;
 
 public class GetInvoiceQuery : BaseQuery, IRequest<InvoiceDto>
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; set; }
 } 

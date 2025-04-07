@@ -5,5 +5,5 @@ namespace TotalSell.Application.Commands;
 
 public class DeleteInvoiceCommand : BaseCommand, IRequest<Unit>
 {
-    public new Guid Id { get; set; }
+    public new required Guid Id { get; set; }
 } 

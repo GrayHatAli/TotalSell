@@ -1,15 +1,19 @@
 using MediatR;
-using TotalSell.Application.DTOs;
+using TotalSell.Domain.Enums;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateInvoiceCommand : IRequest<Guid>
+public class CreateInvoiceCommand : BaseCommand, IRequest<Guid>
 {
     public required string Number { get; set; }
     public required DateTime Date { get; set; }
-    public required Guid CustomerId { get; set; }
     public string? Description { get; set; }
-    public string? PaymentTerms { get; set; }
     public required DateTime DueDate { get; set; }
-    public required List<InvoiceItemDto> Items { get; set; }
-} 
+    public required InvoiceStatus Status { get; set; }
+    public required InvoiceType Type { get; set; }
+    public required Guid CustomerId { get; set; }
+    public string? ReferenceNumber { get; set; }
+    public DateTime? ReferenceDate { get; set; }
+    public string? PaymentMethod { get; set; }
+    public required List<CreateInvoiceItemCommand> Items { get; set; }
+}

@@ -1,6 +1,5 @@
 using FluentValidation;
 using TotalSell.Application.Commands;
-using TotalSell.Application.DTOs;
 
 namespace TotalSell.Application.Validators;
 
