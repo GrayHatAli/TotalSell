@@ -1,8 +1,10 @@
+using MediatR;
 using TotalSell.Application.Common;
+using TotalSell.Application.DTOs;
 
 namespace TotalSell.Application.Queries;
 
-public class GetInvoiceQuery : BaseQuery
+public class GetInvoiceQuery : BaseQuery, IRequest<InvoiceDto>
 {
-    public Guid InvoiceId { get; set; }
+    public Guid Id { get; set; }
 } 

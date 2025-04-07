@@ -6,7 +6,9 @@ public enum InvoiceStatus
     Pending = 1,
     Approved = 2,
     Rejected = 3,
-    Paid = 4,
-    Cancelled = 5,
-    Void = 6
+    Cancelled = 4,
+    Paid = 5,
+    PartiallyPaid = 6,
+    Overdue = 7,
+    Void = 8
 } 

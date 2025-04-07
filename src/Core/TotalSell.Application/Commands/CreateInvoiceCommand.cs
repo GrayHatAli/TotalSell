@@ -1,23 +1,15 @@
-using TotalSell.Application.Common;
+using MediatR;
+using TotalSell.Application.DTOs;
 
 namespace TotalSell.Application.Commands;
 
-public class CreateInvoiceCommand : BaseCommand
+public class CreateInvoiceCommand : IRequest<Guid>
 {
-    public string Number { get; set; } = null!;
-    public DateTime Date { get; set; }
+    public required string Number { get; set; }
+    public required DateTime Date { get; set; }
+    public required Guid CustomerId { get; set; }
     public string? Description { get; set; }
     public string? PaymentTerms { get; set; }
-    public DateTime? DueDate { get; set; }
-    public Guid CustomerId { get; set; }
-    public IEnumerable<CreateInvoiceItemCommand> Items { get; set; } = new List<CreateInvoiceItemCommand>();
-}
-
-public class CreateInvoiceItemCommand
-{
-    public Guid ProductId { get; set; }
-    public decimal Quantity { get; set; }
-    public decimal UnitPrice { get; set; }
-    public decimal DiscountAmount { get; set; }
-    public decimal TaxAmount { get; set; }
+    public required DateTime DueDate { get; set; }
+    public required List<InvoiceItemDto> Items { get; set; }
 } 

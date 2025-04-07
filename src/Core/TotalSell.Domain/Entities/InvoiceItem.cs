@@ -1,41 +1,58 @@
+using TotalSell.Domain.Common;
+
 namespace TotalSell.Domain.Entities;
 
 public class InvoiceItem : BaseEntity
 {
-    public Guid InvoiceId { get; private set; }
+    public required Guid InvoiceId { get; set; }
+    public required Guid ProductId { get; set; }
+    public required decimal Quantity { get; set; }
+    public required decimal UnitPrice { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TaxAmount { get; set; }
+    public decimal TotalAmount { get; set; }
     public Invoice? Invoice { get; private set; }
-    public Guid ProductId { get; private set; }
     public Product? Product { get; private set; }
-    public decimal Quantity { get; private set; }
-    public decimal UnitPrice { get; private set; }
-    public decimal DiscountAmount { get; private set; }
-    public decimal TaxAmount { get; private set; }
-    public decimal TotalAmount { get; private set; }
-    public string Description { get; private set; } = string.Empty;
 
-    private InvoiceItem() { }
+    private InvoiceItem() { } // For EF Core
 
-    public InvoiceItem(
+    public static InvoiceItem Create(
         Guid invoiceId,
         Guid productId,
         decimal quantity,
         decimal unitPrice,
         decimal discountAmount = 0,
-        decimal taxAmount = 0,
-        string? description = null)
+        decimal taxAmount = 0)
     {
-        InvoiceId = invoiceId;
-        ProductId = productId;
+        var item = new InvoiceItem
+        {
+            InvoiceId = invoiceId,
+            ProductId = productId,
+            Quantity = quantity,
+            UnitPrice = unitPrice,
+            DiscountAmount = discountAmount,
+            TaxAmount = taxAmount
+        };
+
+        item.CalculateTotal();
+        return item;
+    }
+
+    public void Update(
+        decimal quantity,
+        decimal unitPrice,
+        decimal discountAmount = 0,
+        decimal taxAmount = 0)
+    {
         Quantity = quantity;
         UnitPrice = unitPrice;
         DiscountAmount = discountAmount;
         TaxAmount = taxAmount;
-        Description = description ?? string.Empty;
-        CalculateTotalAmount();
+        CalculateTotal();
     }
 
-    private void CalculateTotalAmount()
+    private void CalculateTotal()
     {
-        TotalAmount = (Quantity * UnitPrice) + TaxAmount - DiscountAmount;
+        TotalAmount = (Quantity * UnitPrice) - DiscountAmount + TaxAmount;
     }
 } 

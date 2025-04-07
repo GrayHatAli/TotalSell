@@ -1,8 +1,11 @@
+using TotalSell.Domain.Common;
+using TotalSell.Domain.Enums;
+
 namespace TotalSell.Domain.Entities;
 
 public class ProformaInvoice : Invoice
 {
-    public Guid CustomerId { get; private set; }
+    public required Guid CustomerId { get; set; }
     public Customer? Customer { get; private set; }
     public string ReferenceNumber { get; private set; } = string.Empty;
     public DateTime? ReferenceDate { get; private set; }
@@ -14,39 +17,45 @@ public class ProformaInvoice : Invoice
     public DateTime? ValidUntil { get; private set; }
     public string TermsAndConditions { get; private set; } = string.Empty;
 
-    private ProformaInvoice() { }
+    private ProformaInvoice() { } // For EF Core
 
-    public ProformaInvoice(
+    public static ProformaInvoice Create(
         string number,
         DateTime date,
         Guid customerId,
-        string? referenceNumber = null,
-        DateTime? referenceDate = null,
-        string? description = null,
-        string? paymentTerms = null,
-        DateTime? dueDate = null,
-        string? paymentMethod = null,
-        string? bankName = null,
-        string? bankAccountNumber = null,
-        string? bankCardNumber = null,
-        DateTime? validUntil = null,
-        string? termsAndConditions = null)
+        string? description,
+        string? paymentTerms,
+        DateTime dueDate)
     {
-        Number = number;
-        Date = date;
+        var invoice = new ProformaInvoice
+        {
+            Number = number,
+            Date = date,
+            CustomerId = customerId,
+            Description = description,
+            PaymentTerms = paymentTerms,
+            DueDate = dueDate,
+            Status = InvoiceStatus.Draft,
+            SubTotal = 0,
+            TaxAmount = 0,
+            DiscountAmount = 0,
+            TotalAmount = 0
+        };
+
+        return invoice;
+    }
+
+    public void Update(
+        string number,
+        DateTime date,
+        Guid customerId,
+        string? description,
+        string? paymentTerms,
+        DateTime dueDate,
+        InvoiceStatus status)
+    {
+        base.Update(number, date, description, paymentTerms, dueDate, status);
         CustomerId = customerId;
-        ReferenceNumber = referenceNumber ?? string.Empty;
-        ReferenceDate = referenceDate;
-        Description = description ?? string.Empty;
-        PaymentTerms = paymentTerms ?? string.Empty;
-        DueDate = dueDate;
-        PaymentMethod = paymentMethod ?? string.Empty;
-        BankName = bankName ?? string.Empty;
-        BankAccountNumber = bankAccountNumber ?? string.Empty;
-        BankCardNumber = bankCardNumber ?? string.Empty;
-        ValidUntil = validUntil;
-        TermsAndConditions = termsAndConditions ?? string.Empty;
-        Status = "Draft";
     }
 
     public void AddItem(
@@ -54,23 +63,20 @@ public class ProformaInvoice : Invoice
         decimal quantity,
         decimal unitPrice,
         decimal discountAmount = 0,
-        decimal taxAmount = 0,
-        string? description = null)
+        decimal taxAmount = 0)
     {
-        var item = new InvoiceItem(
+        var item = InvoiceItem.Create(
             Id,
             productId,
             quantity,
             unitPrice,
             discountAmount,
-            taxAmount,
-            description);
+            taxAmount);
 
-        Items.Add(item);
-        CalculateTotals();
+        base.AddItem(item);
     }
 
-    public void UpdateStatus(string status)
+    public void UpdateStatus(InvoiceStatus status)
     {
         Status = status;
         UpdatedAt = DateTime.UtcNow;

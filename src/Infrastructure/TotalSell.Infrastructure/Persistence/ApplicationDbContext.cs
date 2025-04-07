@@ -11,23 +11,26 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     {
     }
 
-    public DbSet<ReportCategory> ReportCategories { get; set; }
-    public DbSet<Report> Reports { get; set; }
-    public DbSet<ReportDashboard> ReportDashboards { get; set; }
-    public DbSet<ReportDashboardItem> ReportDashboardItems { get; set; }
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<ReportCategory> ReportCategories => Set<ReportCategory>();
+    public DbSet<Report> Reports => Set<Report>();
+    public DbSet<ReportDashboard> ReportDashboards => Set<ReportDashboard>();
+    public DbSet<ReportDashboardItem> ReportDashboardItems => Set<ReportDashboardItem>();
     public DbSet<ReportDashboardVersion> ReportDashboardVersions => Set<ReportDashboardVersion>();
-    public DbSet<ReportVersion> ReportVersions { get; set; }
-    public DbSet<ReportView> ReportViews { get; set; }
-    public DbSet<ReportFavorite> ReportFavorites { get; set; }
-    public DbSet<ReportComment> ReportComments { get; set; }
-    public DbSet<ReportPermission> ReportPermissions { get; set; }
-    public DbSet<ReportExecution> ReportExecutions { get; set; }
-    public DbSet<ReportAudit> ReportAudits { get; set; }
-    public DbSet<ReportDashboardAudit> ReportDashboardAudits { get; set; }
-    public DbSet<ReportDashboardFavorite> ReportDashboardFavorites { get; set; }
-    public DbSet<ReportDashboardSchedule> ReportDashboardSchedules { get; set; }
-    public DbSet<ReportSubscription> ReportSubscriptions { get; set; }
-    public DbSet<ReportDashboardSubscription> ReportDashboardSubscriptions { get; set; }
+    public DbSet<ReportVersion> ReportVersions => Set<ReportVersion>();
+    public DbSet<ReportView> ReportViews => Set<ReportView>();
+    public DbSet<ReportFavorite> ReportFavorites => Set<ReportFavorite>();
+    public DbSet<ReportComment> ReportComments => Set<ReportComment>();
+    public DbSet<ReportPermission> ReportPermissions => Set<ReportPermission>();
+    public DbSet<ReportExecution> ReportExecutions => Set<ReportExecution>();
+    public DbSet<ReportAudit> ReportAudits => Set<ReportAudit>();
+    public DbSet<ReportDashboardAudit> ReportDashboardAudits => Set<ReportDashboardAudit>();
+    public DbSet<ReportDashboardFavorite> ReportDashboardFavorites => Set<ReportDashboardFavorite>();
+    public DbSet<ReportDashboardSchedule> ReportDashboardSchedules => Set<ReportDashboardSchedule>();
+    public DbSet<ReportSubscription> ReportSubscriptions => Set<ReportSubscription>();
+    public DbSet<ReportDashboardSubscription> ReportDashboardSubscriptions => Set<ReportDashboardSubscription>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

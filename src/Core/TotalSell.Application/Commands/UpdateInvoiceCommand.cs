@@ -1,18 +1,25 @@
+using MediatR;
 using TotalSell.Application.Common;
+using TotalSell.Application.DTOs;
+using TotalSell.Domain.Enums;
 
 namespace TotalSell.Application.Commands;
 
-public class UpdateInvoiceCommand : BaseCommand
+public class UpdateInvoiceCommand : BaseCommand, IRequest<Unit>
 {
-    public new Guid Id { get; set; }
-    public string Number { get; set; } = null!;
-    public DateTime Date { get; set; }
+    public new required Guid Id { get; set; }
+    public required string Number { get; set; }
+    public required DateTime Date { get; set; }
+    public required Guid CustomerId { get; set; }
     public string? Description { get; set; }
+    public decimal SubTotal { get; set; }
+    public decimal TaxAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TotalAmount { get; set; }
     public string? PaymentTerms { get; set; }
-    public DateTime? DueDate { get; set; }
-    public string Status { get; set; } = null!;
-    public Guid CustomerId { get; set; }
-    public IEnumerable<UpdateInvoiceItemCommand> Items { get; set; } = new List<UpdateInvoiceItemCommand>();
+    public required DateTime DueDate { get; set; }
+    public InvoiceStatus Status { get; set; }
+    public required List<InvoiceItemDto> Items { get; set; }
 }
 
 public class UpdateInvoiceItemCommand

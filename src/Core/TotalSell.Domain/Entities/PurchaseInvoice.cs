@@ -1,33 +1,54 @@
+using TotalSell.Domain.Common;
+using TotalSell.Domain.Enums;
+
 namespace TotalSell.Domain.Entities;
 
 public class PurchaseInvoice : Invoice
 {
-    public Guid SupplierId { get; private set; }
+    public required Guid SupplierId { get; set; }
     public Supplier? Supplier { get; private set; }
     public string SupplierInvoiceNumber { get; private set; } = string.Empty;
     public DateTime? SupplierInvoiceDate { get; private set; }
 
-    private PurchaseInvoice() { }
+    private PurchaseInvoice() { } // For EF Core
 
-    public PurchaseInvoice(
+    public static PurchaseInvoice Create(
         string number,
         DateTime date,
         Guid supplierId,
-        string supplierInvoiceNumber,
-        DateTime? supplierInvoiceDate,
-        string? description = null,
-        string? paymentTerms = null,
-        DateTime? dueDate = null)
+        string? description,
+        string? paymentTerms,
+        DateTime dueDate)
     {
-        Number = number;
-        Date = date;
+        var invoice = new PurchaseInvoice
+        {
+            Number = number,
+            Date = date,
+            SupplierId = supplierId,
+            Description = description,
+            PaymentTerms = paymentTerms,
+            DueDate = dueDate,
+            Status = InvoiceStatus.Draft,
+            SubTotal = 0,
+            TaxAmount = 0,
+            DiscountAmount = 0,
+            TotalAmount = 0
+        };
+
+        return invoice;
+    }
+
+    public void Update(
+        string number,
+        DateTime date,
+        Guid supplierId,
+        string? description,
+        string? paymentTerms,
+        DateTime dueDate,
+        InvoiceStatus status)
+    {
+        base.Update(number, date, description, paymentTerms, dueDate, status);
         SupplierId = supplierId;
-        SupplierInvoiceNumber = supplierInvoiceNumber;
-        SupplierInvoiceDate = supplierInvoiceDate;
-        Description = description;
-        PaymentTerms = paymentTerms;
-        DueDate = dueDate;
-        Status = "Draft";
     }
 
     public void AddItem(
@@ -35,23 +56,20 @@ public class PurchaseInvoice : Invoice
         decimal quantity,
         decimal unitPrice,
         decimal discountAmount = 0,
-        decimal taxAmount = 0,
-        string? description = null)
+        decimal taxAmount = 0)
     {
-        var item = new InvoiceItem(
+        var item = InvoiceItem.Create(
             Id,
             productId,
             quantity,
             unitPrice,
             discountAmount,
-            taxAmount,
-            description);
+            taxAmount);
 
-        Items.Add(item);
-        CalculateTotals();
+        base.AddItem(item);
     }
 
-    public void UpdateStatus(string status)
+    public void UpdateStatus(InvoiceStatus status)
     {
         Status = status;
         UpdatedAt = DateTime.UtcNow;
