@@ -5,7 +5,7 @@ using TotalSell.Domain.Enums;
 
 namespace TotalSell.Application.Commands;
 
-public class UpdateInvoiceCommand : BaseCommand, IRequest<Unit>
+public class UpdateInvoiceCommand : BaseCommand, IRequest<bool>
 {
     public new required Guid Id { get; set; }
     public required string Number { get; set; }
@@ -13,6 +13,7 @@ public class UpdateInvoiceCommand : BaseCommand, IRequest<Unit>
     public string? Description { get; set; }
     public required DateTime DueDate { get; set; }
     public required InvoiceStatus Status { get; set; }
+    public required InvoiceType Type { get; set; }
     public required Guid CustomerId { get; set; }
     public string? ReferenceNumber { get; set; }
     public DateTime? ReferenceDate { get; set; }

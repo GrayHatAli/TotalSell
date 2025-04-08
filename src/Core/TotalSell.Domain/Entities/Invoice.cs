@@ -7,54 +7,84 @@ public abstract class Invoice : BaseEntity
 {
     public required string Number { get; set; }
     public required DateTime Date { get; set; }
-    public string? Description { get; protected set; }
+    public string? Description { get; set; }
     public decimal SubTotal { get; protected set; }
     public decimal TaxAmount { get; protected set; }
     public decimal DiscountAmount { get; protected set; }
     public decimal TotalAmount { get; protected set; }
-    public string? PaymentTerms { get; protected set; }
     public required DateTime DueDate { get; set; }
     public required InvoiceStatus Status { get; set; }
-    private readonly List<InvoiceItem> _items = new();
-    public IReadOnlyCollection<InvoiceItem> Items => _items.AsReadOnly();
+    public required InvoiceType Type { get; set; }
+    public virtual required Guid CustomerId { get; set; }
+    public virtual required Customer Customer { get; set; }
+    public virtual string? ReferenceNumber { get; set; }
+    public virtual DateTime? ReferenceDate { get; set; }
+    public virtual string? PaymentMethod { get; set; }
+    public List<InvoiceItem> Items { get; protected set; } = new();
 
     protected Invoice() { } // For EF Core
 
-    protected void Update(
+    public virtual void Update(
         string number,
         DateTime date,
         string? description,
-        string? paymentTerms,
         DateTime dueDate,
-        InvoiceStatus status)
+        InvoiceStatus status,
+        Guid customerId,
+        Customer customer,
+        string? referenceNumber,
+        DateTime? referenceDate,
+        string? paymentMethod)
     {
         Number = number;
         Date = date;
         Description = description;
-        PaymentTerms = paymentTerms;
         DueDate = dueDate;
         Status = status;
+        CustomerId = customerId;
+        Customer = customer;
+        ReferenceNumber = referenceNumber;
+        ReferenceDate = referenceDate;
+        PaymentMethod = paymentMethod;
     }
 
-    public void RemoveItem(InvoiceItem item)
+    public virtual void AddItem(
+        Guid productId,
+        Product product,
+        decimal quantity,
+        decimal unitPrice,
+        decimal discountAmount,
+        decimal taxAmount)
     {
-        _items.Remove(item);
+        var item = InvoiceItem.Create(
+            Id,
+            this,
+            productId,
+            product,
+            quantity,
+            unitPrice,
+            discountAmount,
+            taxAmount);
+
+        Items.Add(item);
         CalculateTotals();
-        UpdatedAt = DateTime.UtcNow;
     }
 
-    public void AddItem(InvoiceItem item)
+    public void RemoveItem(Guid itemId)
     {
-        _items.Add(item);
-        CalculateTotals();
-        UpdatedAt = DateTime.UtcNow;
+        var item = Items.FirstOrDefault(i => i.Id == itemId);
+        if (item != null)
+        {
+            Items.Remove(item);
+            CalculateTotals();
+        }
     }
 
-    private void CalculateTotals()
+    protected void CalculateTotals()
     {
-        SubTotal = _items.Sum(x => x.Quantity * x.UnitPrice);
-        TaxAmount = _items.Sum(x => x.TaxAmount);
-        DiscountAmount = _items.Sum(x => x.DiscountAmount);
+        SubTotal = Items.Sum(i => i.TotalAmount);
+        TaxAmount = Items.Sum(i => i.TaxAmount);
+        DiscountAmount = Items.Sum(i => i.DiscountAmount);
         TotalAmount = SubTotal + TaxAmount - DiscountAmount;
     }
 } 

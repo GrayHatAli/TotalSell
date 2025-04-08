@@ -1,9 +1,11 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TotalSell.Application.Commands;
 using TotalSell.Application.Common.Persistence;
 using TotalSell.Domain.Entities;
+using TotalSell.Domain.Enums;
 
-namespace TotalSell.Application.Commands.Handlers;
+namespace TotalSell.Application.Handlers;
 
 public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand, Guid>
 {
@@ -16,6 +18,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
 
     public async Task<Guid> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
     {
+        // Validate customer exists
         var customer = await _context.Customers
             .FirstOrDefaultAsync(c => c.Id == request.CustomerId, cancellationToken);
 
@@ -24,9 +27,10 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
             throw new ArgumentException("Customer not found");
         }
 
+        // Create invoice based on type
         Invoice invoice = request.Type switch
         {
-            Domain.Enums.InvoiceType.Sales => SalesInvoice.Create(
+            InvoiceType.Sales => SalesInvoice.Create(
                 request.Number,
                 request.Date,
                 request.Description,
@@ -38,7 +42,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
                 request.ReferenceDate,
                 request.PaymentMethod),
 
-            Domain.Enums.InvoiceType.Purchase => PurchaseInvoice.Create(
+            InvoiceType.Purchase => PurchaseInvoice.Create(
                 request.Number,
                 request.Date,
                 request.Description,
@@ -51,7 +55,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
                 request.ReferenceDate,
                 request.PaymentMethod),
 
-            Domain.Enums.InvoiceType.Proforma => ProformaInvoice.Create(
+            InvoiceType.Proforma => ProformaInvoice.Create(
                 request.Number,
                 request.Date,
                 request.Description,
@@ -66,6 +70,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
             _ => throw new ArgumentException($"Invalid invoice type: {request.Type}")
         };
 
+        // Add items
         foreach (var item in request.Items)
         {
             var product = await _context.Products
@@ -85,6 +90,7 @@ public class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoiceCommand,
                 item.TaxAmount);
         }
 
+        // Save invoice
         _context.Invoices.Add(invoice);
         await _context.SaveChangesAsync(cancellationToken);
 

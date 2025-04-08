@@ -10,48 +10,56 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
     {
         builder.ToTable("Invoices");
         
-        builder.HasKey(e => e.Id);
+        builder.HasKey(i => i.Id);
         
-        builder.Property(e => e.Number)
+        builder.Property(i => i.Number)
             .IsRequired()
             .HasMaxLength(50);
             
-        builder.Property(e => e.Date)
+        builder.Property(i => i.Date)
             .IsRequired();
             
-        builder.Property(e => e.Description)
+        builder.Property(i => i.Description)
             .HasMaxLength(500);
             
-        builder.Property(e => e.SubTotal)
+        builder.Property(i => i.SubTotal)
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.TaxAmount)
+        builder.Property(i => i.TaxAmount)
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.DiscountAmount)
+        builder.Property(i => i.DiscountAmount)
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.TotalAmount)
+        builder.Property(i => i.TotalAmount)
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.PaymentTerms)
-            .HasMaxLength(100);
-            
-        builder.Property(e => e.DueDate)
+        builder.Property(i => i.DueDate)
             .IsRequired();
             
-        builder.Property(e => e.Status)
-            .IsRequired()
+        builder.Property(i => i.Status)
+            .IsRequired();
+            
+        builder.Property(i => i.Type)
+            .IsRequired();
+            
+        builder.Property(i => i.CustomerId)
+            .IsRequired();
+            
+        builder.Property(i => i.ReferenceNumber)
             .HasMaxLength(50);
             
-        builder.HasMany(e => e.Items)
-            .WithOne()
-            .HasForeignKey("InvoiceId")
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(i => i.PaymentMethod)
+            .HasMaxLength(50);
             
-        builder.HasDiscriminator<string>("InvoiceType")
-            .HasValue<SalesInvoice>("Sales")
-            .HasValue<PurchaseInvoice>("Purchase")
-            .HasValue<ProformaInvoice>("Proforma");
+        builder.HasOne(i => i.Customer)
+            .WithMany()
+            .HasForeignKey(i => i.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+            
+        builder.HasMany(i => i.Items)
+            .WithOne(i => i.Invoice)
+            .HasForeignKey(i => i.InvoiceId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 } 

@@ -1,8 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using TotalSell.Application.Commands;
 using TotalSell.Application.Common.Persistence;
 
-namespace TotalSell.Application.Commands.Handlers;
+namespace TotalSell.Application.Handlers;
 
 public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand, bool>
 {
@@ -15,6 +16,7 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
 
     public async Task<bool> Handle(UpdateInvoiceCommand request, CancellationToken cancellationToken)
     {
+        // Get invoice with items
         var invoice = await _context.Invoices
             .Include(i => i.Items)
             .FirstOrDefaultAsync(i => i.Id == request.Id, cancellationToken);
@@ -24,6 +26,7 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             throw new ArgumentException("Invoice not found");
         }
 
+        // Validate customer exists
         var customer = await _context.Customers
             .FirstOrDefaultAsync(c => c.Id == request.CustomerId, cancellationToken);
 
@@ -32,6 +35,7 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             throw new ArgumentException("Customer not found");
         }
 
+        // Update invoice
         invoice.Update(
             request.Number,
             request.Date,
@@ -44,13 +48,14 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             request.ReferenceDate,
             request.PaymentMethod);
 
+        // Remove items that are not in the request
         var itemIdsToKeep = request.Items
             .Where(i => i.Id.HasValue)
             .Select(i => i.Id!.Value)
             .ToList();
 
         var itemsToRemove = invoice.Items
-            .Where(i => !itemIdsToKeep.Contains(i.Id))
+            .ExceptBy(itemIdsToKeep, i => i.Id)
             .ToList();
 
         foreach (var item in itemsToRemove)
@@ -58,10 +63,12 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             invoice.RemoveItem(item.Id);
         }
 
+        // Update or add items
         foreach (var item in request.Items)
         {
             if (item.Id.HasValue)
             {
+                // Update existing item
                 var existingItem = invoice.Items.FirstOrDefault(i => i.Id == item.Id);
                 if (existingItem != null)
                 {
@@ -75,6 +82,7 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             }
             else
             {
+                // Add new item
                 var product = await _context.Products
                     .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
 
@@ -93,7 +101,9 @@ public class UpdateInvoiceCommandHandler : IRequestHandler<UpdateInvoiceCommand,
             }
         }
 
+        // Save changes
         await _context.SaveChangesAsync(cancellationToken);
+
         return true;
     }
 } 

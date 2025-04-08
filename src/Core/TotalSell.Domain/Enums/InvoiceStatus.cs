@@ -2,13 +2,13 @@ namespace TotalSell.Domain.Enums;
 
 public enum InvoiceStatus
 {
-    Draft = 0,
-    Pending = 1,
-    Approved = 2,
-    Rejected = 3,
-    Cancelled = 4,
-    Paid = 5,
-    PartiallyPaid = 6,
-    Overdue = 7,
-    Void = 8
+    Draft = 1,
+    Pending = 2,
+    Approved = 3,
+    Rejected = 4,
+    Cancelled = 5,
+    Paid = 6,
+    PartiallyPaid = 7,
+    Overdue = 8,
+    Void = 9
 } 

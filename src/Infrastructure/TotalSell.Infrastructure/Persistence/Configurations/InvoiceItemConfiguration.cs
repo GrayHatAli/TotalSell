@@ -10,39 +10,33 @@ public class InvoiceItemConfiguration : IEntityTypeConfiguration<InvoiceItem>
     {
         builder.ToTable("InvoiceItems");
         
-        builder.HasKey(e => e.Id);
+        builder.HasKey(i => i.Id);
         
-        builder.Property(e => e.InvoiceId)
-            .IsRequired();
-            
-        builder.Property(e => e.ProductId)
-            .IsRequired();
-            
-        builder.Property(e => e.Quantity)
-            .HasPrecision(18, 2)
-            .IsRequired();
-            
-        builder.Property(e => e.UnitPrice)
-            .HasPrecision(18, 2)
-            .IsRequired();
-            
-        builder.Property(e => e.DiscountAmount)
+        builder.Property(i => i.Quantity)
+            .IsRequired()
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.TaxAmount)
+        builder.Property(i => i.UnitPrice)
+            .IsRequired()
             .HasPrecision(18, 2);
             
-        builder.Property(e => e.TotalAmount)
+        builder.Property(i => i.DiscountAmount)
             .HasPrecision(18, 2);
             
-        builder.HasOne(e => e.Product)
+        builder.Property(i => i.TaxAmount)
+            .HasPrecision(18, 2);
+            
+        builder.Property(i => i.TotalAmount)
+            .HasPrecision(18, 2);
+            
+        builder.HasOne(i => i.Product)
             .WithMany()
-            .HasForeignKey(e => e.ProductId)
+            .HasForeignKey(i => i.ProductId)
             .OnDelete(DeleteBehavior.Restrict);
             
-        builder.HasOne(e => e.Invoice)
+        builder.HasOne(i => i.Invoice)
             .WithMany(i => i.Items)
-            .HasForeignKey(e => e.InvoiceId)
+            .HasForeignKey(i => i.InvoiceId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 } 

@@ -5,111 +5,63 @@ namespace TotalSell.Domain.Entities;
 
 public class ProformaInvoice : Invoice
 {
-    public required Guid CustomerId { get; set; }
-    public Customer? Customer { get; private set; }
-    public string ReferenceNumber { get; private set; } = string.Empty;
-    public DateTime? ReferenceDate { get; private set; }
-    public string PaymentMethod { get; private set; } = string.Empty;
-    public string BankName { get; private set; } = string.Empty;
-    public string BankAccountNumber { get; private set; } = string.Empty;
-    public string BankCardNumber { get; private set; } = string.Empty;
-    public string TrackingCode { get; private set; } = string.Empty;
-    public DateTime? ValidUntil { get; private set; }
-    public string TermsAndConditions { get; private set; } = string.Empty;
-
-    private ProformaInvoice() { } // For EF Core
+    protected ProformaInvoice() : base()
+    {
+    }
 
     public static ProformaInvoice Create(
         string number,
         DateTime date,
-        Guid customerId,
         string? description,
-        string? paymentTerms,
-        DateTime dueDate)
+        DateTime dueDate,
+        InvoiceStatus status,
+        Guid customerId,
+        Customer customer,
+        string? referenceNumber,
+        DateTime? referenceDate,
+        string? paymentMethod)
     {
         var invoice = new ProformaInvoice
         {
             Number = number,
             Date = date,
-            CustomerId = customerId,
             Description = description,
-            PaymentTerms = paymentTerms,
             DueDate = dueDate,
-            Status = InvoiceStatus.Draft,
-            SubTotal = 0,
-            TaxAmount = 0,
-            DiscountAmount = 0,
-            TotalAmount = 0
+            Status = status,
+            CustomerId = customerId,
+            Customer = customer,
+            ReferenceNumber = referenceNumber,
+            ReferenceDate = referenceDate,
+            PaymentMethod = paymentMethod,
+            Type = InvoiceType.Proforma
         };
 
         return invoice;
     }
 
-    public void Update(
+    public override string? ReferenceNumber { get; set; }
+    public override DateTime? ReferenceDate { get; set; }
+    public override string? PaymentMethod { get; set; }
+    public override required Guid CustomerId { get; set; }
+    public override required Customer Customer { get; set; }
+
+    public override void Update(
         string number,
         DateTime date,
-        Guid customerId,
         string? description,
-        string? paymentTerms,
         DateTime dueDate,
-        InvoiceStatus status)
+        InvoiceStatus status,
+        Guid customerId,
+        Customer customer,
+        string? referenceNumber,
+        DateTime? referenceDate,
+        string? paymentMethod)
     {
-        base.Update(number, date, description, paymentTerms, dueDate, status);
-        CustomerId = customerId;
+        base.Update(number, date, description, dueDate, status, customerId, customer, referenceNumber, referenceDate, paymentMethod);
     }
 
-    public void AddItem(
-        Guid productId,
-        decimal quantity,
-        decimal unitPrice,
-        decimal discountAmount = 0,
-        decimal taxAmount = 0)
+    public override void AddItem(Guid productId, Product product, decimal quantity, decimal unitPrice, decimal discountAmount, decimal taxAmount)
     {
-        var item = InvoiceItem.Create(
-            Id,
-            productId,
-            quantity,
-            unitPrice,
-            discountAmount,
-            taxAmount);
-
-        base.AddItem(item);
-    }
-
-    public void UpdateStatus(InvoiceStatus status)
-    {
-        Status = status;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void SetPaymentDetails(
-        string paymentMethod,
-        string bankName,
-        string bankAccountNumber,
-        string bankCardNumber)
-    {
-        PaymentMethod = paymentMethod;
-        BankName = bankName;
-        BankAccountNumber = bankAccountNumber;
-        BankCardNumber = bankCardNumber;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void SetTrackingCode(string trackingCode)
-    {
-        TrackingCode = trackingCode;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void SetTermsAndConditions(string termsAndConditions)
-    {
-        TermsAndConditions = termsAndConditions;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void SetValidUntil(DateTime validUntil)
-    {
-        ValidUntil = validUntil;
-        UpdatedAt = DateTime.UtcNow;
+        base.AddItem(productId, product, quantity, unitPrice, discountAmount, taxAmount);
     }
 } 

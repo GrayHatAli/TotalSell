@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TotalSell.Application.Commands;
 using TotalSell.Application.Common.Persistence;
 
-namespace TotalSell.Application.Commands.Handlers;
+namespace TotalSell.Application.Handlers;
 
 public class DeleteInvoiceCommandHandler : IRequestHandler<DeleteInvoiceCommand, bool>
 {

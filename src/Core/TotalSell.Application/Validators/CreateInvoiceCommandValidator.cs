@@ -8,38 +8,61 @@ public class CreateInvoiceCommandValidator : AbstractValidator<CreateInvoiceComm
     public CreateInvoiceCommandValidator()
     {
         RuleFor(x => x.Number)
-            .NotEmpty().WithMessage("شماره فاکتور نمی‌تواند خالی باشد")
-            .MaximumLength(20).WithMessage("شماره فاکتور نمی‌تواند بیشتر از 20 کاراکتر باشد");
+            .NotEmpty()
+            .MaximumLength(50);
 
         RuleFor(x => x.Date)
-            .NotEmpty().WithMessage("تاریخ فاکتور نمی‌تواند خالی باشد")
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("تاریخ فاکتور نمی‌تواند از تاریخ امروز بیشتر باشد");
+            .NotEmpty();
+
+        RuleFor(x => x.Description)
+            .MaximumLength(500);
 
         RuleFor(x => x.DueDate)
-            .NotEmpty().WithMessage("تاریخ سررسید نمی‌تواند خالی باشد")
-            .GreaterThan(x => x.Date).WithMessage("تاریخ سررسید باید بعد از تاریخ فاکتور باشد");
+            .NotEmpty()
+            .GreaterThan(x => x.Date)
+            .WithMessage("Due date must be after invoice date");
+
+        RuleFor(x => x.Status)
+            .IsInEnum();
+
+        RuleFor(x => x.Type)
+            .IsInEnum();
+
+        RuleFor(x => x.CustomerId)
+            .NotEmpty();
+
+        RuleFor(x => x.ReferenceNumber)
+            .MaximumLength(50);
+
+        RuleFor(x => x.PaymentMethod)
+            .MaximumLength(50);
 
         RuleFor(x => x.Items)
-            .NotEmpty().WithMessage("فاکتور باید حداقل یک آیتم داشته باشد");
+            .NotEmpty()
+            .WithMessage("Invoice must have at least one item");
 
-        RuleForEach(x => x.Items).ChildRules(item =>
-        {
-            item.RuleFor(x => x.ProductId)
-                .NotEmpty().WithMessage("شناسه محصول نمی‌تواند خالی باشد");
+        RuleForEach(x => x.Items)
+            .SetValidator(new CreateInvoiceItemCommandValidator());
+    }
+}
 
-            item.RuleFor(x => x.Quantity)
-                .GreaterThan(0).WithMessage("تعداد باید بیشتر از صفر باشد");
+public class CreateInvoiceItemCommandValidator : AbstractValidator<CreateInvoiceItemCommand>
+{
+    public CreateInvoiceItemCommandValidator()
+    {
+        RuleFor(x => x.ProductId)
+            .NotEmpty();
 
-            item.RuleFor(x => x.UnitPrice)
-                .GreaterThan(0).WithMessage("قیمت واحد باید بیشتر از صفر باشد");
+        RuleFor(x => x.Quantity)
+            .GreaterThan(0);
 
-            item.RuleFor(x => x.DiscountAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("مبلغ تخفیف نمی‌تواند منفی باشد")
-                .LessThanOrEqualTo(x => x.UnitPrice * x.Quantity)
-                .WithMessage("مبلغ تخفیف نمی‌تواند از مبلغ کل بیشتر باشد");
+        RuleFor(x => x.UnitPrice)
+            .GreaterThan(0);
 
-            item.RuleFor(x => x.TaxAmount)
-                .GreaterThanOrEqualTo(0).WithMessage("مبلغ مالیات نمی‌تواند منفی باشد");
-        });
+        RuleFor(x => x.DiscountAmount)
+            .GreaterThanOrEqualTo(0);
+
+        RuleFor(x => x.TaxAmount)
+            .GreaterThanOrEqualTo(0);
     }
 } 

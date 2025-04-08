@@ -9,64 +9,66 @@ public class PurchaseInvoice : Invoice
     public Supplier? Supplier { get; private set; }
     public string SupplierInvoiceNumber { get; private set; } = string.Empty;
     public DateTime? SupplierInvoiceDate { get; private set; }
+    public override string? ReferenceNumber { get; set; }
+    public override DateTime? ReferenceDate { get; set; }
+    public override string? PaymentMethod { get; set; }
+    public override required Guid CustomerId { get; set; }
+    public override required Customer Customer { get; set; }
 
-    private PurchaseInvoice() { } // For EF Core
+    protected PurchaseInvoice() : base()
+    {
+    }
 
     public static PurchaseInvoice Create(
         string number,
         DateTime date,
-        Guid supplierId,
         string? description,
-        string? paymentTerms,
-        DateTime dueDate)
+        DateTime dueDate,
+        InvoiceStatus status,
+        Guid customerId,
+        Customer customer,
+        Guid supplierId,
+        string? referenceNumber,
+        DateTime? referenceDate,
+        string? paymentMethod)
     {
         var invoice = new PurchaseInvoice
         {
             Number = number,
             Date = date,
-            SupplierId = supplierId,
             Description = description,
-            PaymentTerms = paymentTerms,
             DueDate = dueDate,
-            Status = InvoiceStatus.Draft,
-            SubTotal = 0,
-            TaxAmount = 0,
-            DiscountAmount = 0,
-            TotalAmount = 0
+            Status = status,
+            CustomerId = customerId,
+            Customer = customer,
+            SupplierId = supplierId,
+            ReferenceNumber = referenceNumber,
+            ReferenceDate = referenceDate,
+            PaymentMethod = paymentMethod,
+            Type = InvoiceType.Purchase
         };
 
         return invoice;
     }
 
-    public void Update(
+    public override void Update(
         string number,
         DateTime date,
-        Guid supplierId,
         string? description,
-        string? paymentTerms,
         DateTime dueDate,
-        InvoiceStatus status)
+        InvoiceStatus status,
+        Guid customerId,
+        Customer customer,
+        string? referenceNumber,
+        DateTime? referenceDate,
+        string? paymentMethod)
     {
-        base.Update(number, date, description, paymentTerms, dueDate, status);
-        SupplierId = supplierId;
+        base.Update(number, date, description, dueDate, status, customerId, customer, referenceNumber, referenceDate, paymentMethod);
     }
 
-    public void AddItem(
-        Guid productId,
-        decimal quantity,
-        decimal unitPrice,
-        decimal discountAmount = 0,
-        decimal taxAmount = 0)
+    public override void AddItem(Guid productId, Product product, decimal quantity, decimal unitPrice, decimal discountAmount, decimal taxAmount)
     {
-        var item = InvoiceItem.Create(
-            Id,
-            productId,
-            quantity,
-            unitPrice,
-            discountAmount,
-            taxAmount);
-
-        base.AddItem(item);
+        base.AddItem(productId, product, quantity, unitPrice, discountAmount, taxAmount);
     }
 
     public void UpdateStatus(InvoiceStatus status)

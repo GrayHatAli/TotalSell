@@ -19,4 +19,6 @@ public class SearchInvoicesQuery : BaseQuery, IRequest<IEnumerable<InvoiceDto>>
     public int PageSize { get; set; } = 10;
     public string? SortBy { get; set; }
     public bool SortDescending { get; set; }
+    public string? ReferenceNumber { get; set; }
+    public string? PaymentMethod { get; set; }
 } 

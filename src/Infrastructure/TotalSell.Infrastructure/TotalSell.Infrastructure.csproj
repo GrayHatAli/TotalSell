@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\TotalSell.Application\TotalSell.Application.csproj" />
+    <ProjectReference Include="..\..\Core\TotalSell.Application.Common\TotalSell.Application.Common.csproj" />
     <ProjectReference Include="..\..\Core\TotalSell.Domain\TotalSell.Domain.csproj" />
   </ItemGroup>
 
