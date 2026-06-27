@@ -1,6 +1,0 @@
-namespace TotalSell.Application.Common;
-
-public abstract class BaseCommand
-{
-    public Guid Id { get; set; }
-} 
