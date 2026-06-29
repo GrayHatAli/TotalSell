@@ -1,0 +1,2 @@
+"""TotalSell backend application package."""
+

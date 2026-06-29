@@ -1,0 +1,54 @@
+# This is an example configuration file
+# To learn more, see the full config.yaml reference: https://docs.continue.dev/reference
+
+name: Example Config
+version: 1.0.0
+schema: v1
+
+# Define which models can be used
+# https://docs.continue.dev/customization/models
+models:
+  - name: Claude Opus 4.8
+    provider: openai
+    model: claude-opus-4-8
+    apiBase: https://conduit.ozdoev.net/api/v1
+    apiKey: sk-cdt-eyJpZCI6IjU4NTc0NzkzIiwidSI6IiIsIm4iOiJkZWZhdWx0IiwiaiI6ImRlZmF1bHQiLCJrIjoiYXBpIn0.y-IwgBlneGjLOI1h40WSprVSATpkY7Iml8Us3ZxHAOA
+    roles:
+      - chat
+      - edit
+      - apply
+      - autocomplete
+    defaultCompletionOptions:
+      contextLength: 200000
+      maxTokens: 64000
+    capabilities:
+      - tool_use
+      - image_input
+context:
+  - provider: code
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+  - provider: folder
+
+# 🧠 Behavior rules (agent-like)
+rules:
+  - First analyze the project structure before making changes.
+  - Prefer editing existing files over creating new ones.
+  - When implementing a feature, plan first, then code.
+  - Always generate testable output.
+  - Suggest terminal commands when needed.
+  - Generate git commit messages after changes.
+  - Minimize unnecessary file creation.
+
+# 🧪 Automation behavior
+experimental:
+  autoAcceptEdits: true
+  autoApply: true
+
+prompts:
+  - name: Commit Message
+    description: Generate concise git commit messages
+    prompt: |
+      Generate a conventional commit message for the current staged changes.
+
