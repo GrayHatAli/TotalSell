@@ -1,4 +1,7 @@
 .DS_Store
+
+# Kilo agent manager
+.kilo/
 .env
 .env.*
 !.env.example
