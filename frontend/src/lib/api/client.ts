@@ -1,10 +1,16 @@
 const API_BASE = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
 
+export interface ErrorInfo {
+	code: string;
+	message: string;
+	details: Record<string, unknown> | null;
+}
+
 export interface ApiResponse<T = unknown> {
 	success: boolean;
 	data: T | null;
 	meta: Record<string, unknown> | null;
-	error: string | null;
+	error: ErrorInfo | null;
 }
 
 export interface TokenPair {
@@ -94,7 +100,7 @@ export async function apiRequest<T>(
 	const body: ApiResponse<T> = await res.json();
 
 	if (!res.ok && !body.success) {
-		throw new Error(body.error || `Request failed with status ${res.status}`);
+		throw new Error(body.error?.message || `Request failed with status ${res.status}`);
 	}
 
 	if (!res.ok) {
