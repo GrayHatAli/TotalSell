@@ -75,6 +75,8 @@
 		{ label: 'nav.customers', href: '/customers', icon: '👥' },
 		{ label: 'nav.suppliers', href: '/suppliers', icon: '🏭' },
 		{ label: 'nav.products', href: '/products', icon: '📦' },
+		{ label: 'nav.categories', href: '/categories', icon: '📁' },
+		{ label: 'nav.tags', href: '/tags', icon: '🔖' },
 		{ label: 'nav.purchases', href: '/purchases', icon: '🛒' },
 		{ label: 'nav.sales', href: '/sales', icon: '💰' },
 		{ label: 'nav.accounting', href: '/accounting', icon: '📒' },

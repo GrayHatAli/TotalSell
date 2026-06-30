@@ -4,13 +4,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routers import auth, health
+from app.routers import auth, categories, customers, health, products, suppliers, tags
 from app.schemas.common import fail
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title=settings.app_name, version="0.1.0")
+    app = FastAPI(title=settings.app_name, version="0.2.0")
 
     app.add_middleware(
         CORSMiddleware,
@@ -22,6 +22,11 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router, prefix=settings.api_v1_prefix)
     app.include_router(auth.router, prefix=settings.api_v1_prefix)
+    app.include_router(customers.router, prefix=settings.api_v1_prefix)
+    app.include_router(suppliers.router, prefix=settings.api_v1_prefix)
+    app.include_router(categories.router, prefix=settings.api_v1_prefix)
+    app.include_router(tags.router, prefix=settings.api_v1_prefix)
+    app.include_router(products.router, prefix=settings.api_v1_prefix)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
@@ -42,4 +47,3 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
-
