@@ -80,7 +80,6 @@
 		{ label: 'nav.purchases', href: '/purchases', icon: '🛒' },
 		{ label: 'nav.sales', href: '/sales', icon: '💰' },
 		{ label: 'nav.accounting', href: '/accounting', icon: '📒' },
-		{ label: 'nav.reports', href: '/reports', icon: '📈' },
 		{ label: 'nav.inventory', href: '/inventory', icon: '📋' },
 		{ label: 'nav.reports', href: '/reports', icon: '📈' }
 	];

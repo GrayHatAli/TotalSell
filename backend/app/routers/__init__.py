@@ -1,4 +1,4 @@
-from app.routers import accounting, accounts, auth, bank_accounts, categories, customers, health, inventory, payments, products, purchase_invoices, sale_invoices, suppliers, tags
+from app.routers import accounting, accounts, auth, bank_accounts, categories, customers, health, inventory, payments, products, purchase_invoices, reports, sale_invoices, suppliers, tags
 
 __all__ = [
     "accounting",
@@ -12,6 +12,7 @@ __all__ = [
     "payments",
     "products",
     "purchase_invoices",
+    "reports",
     "sale_invoices",
     "suppliers",
     "tags",

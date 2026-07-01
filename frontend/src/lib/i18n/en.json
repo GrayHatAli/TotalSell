@@ -91,8 +91,7 @@
 	"payments.account": "Account",
 	"inventory.title": "Inventory Movements",
 	"inventory.filterProduct": "Filter by product",
-	"inventory.allProducts": "All products"
-,
+	"inventory.allProducts": "All products",
 	"accounting.journalEntries": "Journal Entries",
 	"accounting.manualEntry": "Manual Entry",
 	"accounting.description": "Description",
@@ -112,5 +111,16 @@
 	"reports.totalLiabilities": "Total Liabilities",
 	"reports.totalEquity": "Total Equity",
 	"reports.liabilitiesPlusEquity": "Liabilities + Equity",
-	"reports.balanced": "Balanced"
+	"reports.balanced": "Balanced",
+	"reports.sales": "Sales Report",
+	"reports.purchases": "Purchase Report",
+	"reports.inventory": "Inventory Report",
+	"reports.byProduct": "By Product",
+	"reports.bySupplier": "By Supplier",
+	"reports.lowStock": "Low Stock Items",
+	"reports.exportExcel": "Export Excel",
+	"reports.totalPurchases": "Total Purchases",
+	"reports.invoiceCount": "Invoice Count",
+	"reports.stock": "Stock",
+	"reports.minStock": "Min Stock"
 }
