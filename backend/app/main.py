@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import get_settings
-from app.routers import accounts, auth, bank_accounts, categories, customers, health, inventory, payments, products, purchase_invoices, sale_invoices, suppliers, tags
+from app.routers import accounting, accounts, auth, bank_accounts, categories, customers, health, inventory, payments, products, purchase_invoices, sale_invoices, suppliers, tags
 from app.schemas.common import fail
 
 
@@ -33,6 +33,7 @@ def create_app() -> FastAPI:
     app.include_router(payments.router, prefix=settings.api_v1_prefix)
     app.include_router(inventory.router, prefix=settings.api_v1_prefix)
     app.include_router(accounts.router, prefix=settings.api_v1_prefix)
+    app.include_router(accounting.router, prefix=settings.api_v1_prefix)
 
     @app.exception_handler(HTTPException)
     async def http_exception_handler(_request: Request, exc: HTTPException) -> JSONResponse:
