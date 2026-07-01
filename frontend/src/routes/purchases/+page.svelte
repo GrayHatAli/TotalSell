@@ -1,0 +1,204 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { listPurchaseInvoices, createPurchaseInvoice } from '$lib/api/purchaseInvoices';
+	import { listSuppliers } from '$lib/api/suppliers';
+	import { listProducts } from '$lib/api/products';
+	import { t } from '$lib/i18n';
+
+	let invoices: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 50 };
+	let products: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 200 };
+	let suppliers: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 50 };
+	let suppliersList: any[] = [];
+	let loading = true;
+	let error = '';
+	let page = 1;
+	let total = 0;
+
+	let showModal = false;
+	let form = {
+		supplier_id: null as number | null,
+		date: new Date().toISOString().slice(0, 10),
+		reference_number: '',
+		discount_pct: 0,
+		tax_pct: 9,
+		shipping: 0,
+		payment_method: 'credit',
+		payment_status: 'unpaid',
+		notes: '',
+		items: [] as { product_id?: number; quantity: number; unit_cost: number; discount_pct: number; tax_pct: number; note?: string }[],
+	};
+
+	onMount(async () => {
+		const [inv, sup, prod] = await Promise.all([
+			listPurchaseInvoices({ page: 1, page_size: 50 }),
+			listSuppliers(),
+			listProducts({ page: 1, page_size: 200 }),
+		]);
+		invoices = inv;
+		suppliers = sup;
+		products = prod;
+		suppliersList = suppliers.items;
+		total = inv.items.length;
+		loading = false;
+	});
+
+	function addItem() {
+		form.items = [...form.items, { product_id: undefined, quantity: 1, unit_cost: 0, discount_pct: 0, tax_pct: 9, note: '' }];
+	}
+
+	function removeItem(idx: number) {
+		form.items = form.items.filter((_, i) => i !== idx);
+	}
+
+	async function handleSave() {
+		try {
+			await createPurchaseInvoice({
+				supplier_id: Number(form.supplier_id),
+				date: form.date,
+				reference_number: form.reference_number || undefined,
+				discount_pct: form.discount_pct,
+				tax_pct: form.tax_pct,
+				shipping: form.shipping,
+				payment_method: form.payment_method,
+				payment_status: form.payment_status,
+				notes: form.notes || undefined,
+				items: form.items,
+			});
+			showModal = false;
+			invoices = await listPurchaseInvoices({ page: 1, page_size: 50 });
+			total = invoices.total;
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to create';
+		}
+	}
+</script>
+
+<div class="max-w-5xl mx-auto space-y-6">
+	<div class="flex items-center justify-between">
+		<h1 class="text-2xl font-bold">{t('nav.purchases')}</h1>
+		<button class="btn btn-primary" on:click={() => (showModal = true)}>{t('common.add')}</button>
+	</div>
+
+	{#if error}
+		<div class="p-3 bg-error-100 dark:bg-error-900/30 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-300 rounded-lg text-sm">
+			{error}
+		</div>
+	{/if}
+
+	{#if loading}
+		<p>{t('common.loading')}</p>
+	{:else}
+		<div class="card overflow-x-auto">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Number</th>
+						<th>Date</th>
+						<th>Supplier</th>
+						<th>Total</th>
+						<th>Status</th>
+						<th>Method</th>
+					</tr>
+				</thead>
+				<tbody>
+				{#each invoices.items as inv}
+					<tr>
+						<td class="font-medium">{inv.number}</td>
+						<td>{inv.date ? inv.date.slice(0, 10) : ''}</td>
+						<td>						{(suppliersList.find(s => s.id === inv.supplier_id) || {}).name || '—'}</td>
+						<td>{Number(inv.total).toLocaleString()}</td>
+						<td>
+							<span class="badge {inv.payment_status === 'paid' ? 'variant-filled-success' : inv.payment_status === 'partial' ? 'variant-filled-warning' : 'variant-filled-error'}">
+								{inv.payment_status}
+							</span>
+						</td>
+						<td>{inv.payment_method || '—'}</td>
+					</tr>
+				{/each}
+				</tbody>
+			</table>
+		</div>
+	{/if}
+</div>
+
+{#if showModal}
+	<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" on:click={(e) => { if (e.target === e.currentTarget) showModal = false; }}>
+		<div class="card p-6 w-full max-w-4xl space-y-4 my-8">
+			<h2 class="text-xl font-semibold">New Purchase Invoice</h2>
+			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Supplier</span>
+					<select class="select w-full" bind:value={form.supplier_id} required>
+						<option value={null}>Select supplier</option>
+						{#each suppliersList as s}
+							<option value={s.id}>{s.name}</option>
+						{/each}
+					</select>
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Date</span>
+					<input class="input w-full" type="date" bind:value={form.date} required />
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Reference</span>
+					<input class="input w-full" bind:value={form.reference_number} />
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Discount %</span>
+					<input class="input w-full" type="number" bind:value={form.discount_pct} min="0" max="100" />
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Tax %</span>
+					<input class="input w-full" type="number" bind:value={form.tax_pct} min="0" max="100" />
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Shipping</span>
+					<input class="input w-full" type="number" bind:value={form.shipping} min="0" />
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Payment</span>
+					<select class="select w-full" bind:value={form.payment_method}>
+						<option value="credit">Credit</option>
+						<option value="cash">Cash</option>
+						<option value="bank">Bank</option>
+					</select>
+				</label>
+				<label class="space-y-1">
+					<span class="text-sm font-medium">Status</span>
+					<select class="select w-full" bind:value={form.payment_status}>
+						<option value="unpaid">Unpaid</option>
+						<option value="partial">Partial</option>
+						<option value="paid">Paid</option>
+					</select>
+				</label>
+			</div>
+
+			<div class="space-y-2">
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold">Items</h3>
+					<button class="btn btn-sm variant-soft" on:click={addItem}>Add Item</button>
+				</div>
+				{#each form.items as item, idx}
+					<div class="grid grid-cols-1 sm:grid-cols-6 gap-2 p-3 bg-surface-100 dark:bg-surface-800 rounded">
+						<select class="select col-span-2" bind:value={item.product_id}>
+							<option value={undefined}>Select product</option>
+							{#each products.items as p}
+								<option value={p.id}>{p.name}</option>
+							{/each}
+						</select>
+						<input class="input" type="number" bind:value={item.quantity} min="1" placeholder="Qty" />
+						<input class="input" type="number" bind:value={item.unit_cost} min="0" step="1000" placeholder="Cost" />
+						<input class="input" type="number" bind:value={item.discount_pct} min="0" max="100" placeholder="Disc%" />
+						<input class="input" type="number" bind:value={item.tax_pct} min="0" max="100" placeholder="Tax%" />
+						<button class="btn btn-sm variant-soft-error" on:click={() => removeItem(idx)}>×</button>
+					</div>
+				{/each}
+			</div>
+
+			<div class="flex justify-end gap-2">
+				<button class="btn variant-soft" on:click={() => (showModal = false)}>{t('common.cancel')}</button>
+				<button class="btn btn-primary" on:click={handleSave} disabled={!form.supplier_id || form.items.length === 0}>{t('common.save')}</button>
+			</div>
+		</div>
+	</div>
+{/if}

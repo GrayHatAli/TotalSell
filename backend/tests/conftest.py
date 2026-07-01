@@ -13,7 +13,7 @@ os.environ["ADMIN_PASSWORD"] = "ChangeMe123!"
 from app.database import engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Base  # noqa: E402
-from app.seed import seed_admin  # noqa: E402
+from app.seed import seed_accounts, seed_admin  # noqa: E402
 from app.database import SessionLocal  # noqa: E402
 
 
@@ -24,6 +24,7 @@ def reset_database():
     db = SessionLocal()
     try:
         seed_admin(db)
+        seed_accounts(db)
     finally:
         db.close()
     yield
