@@ -3,7 +3,9 @@
 	import { listSaleInvoices, createSaleInvoice } from '$lib/api/saleInvoices';
 	import { listCustomers } from '$lib/api/customers';
 	import { listProducts } from '$lib/api/products';
+	import { barcodeLookup } from '$lib/api/barcode';
 	import { t } from '$lib/i18n';
+	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 
 	let invoices: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 50 };
 	let products: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 200 };
@@ -13,6 +15,8 @@
 	let error = '';
 
 	let showModal = false;
+	let scannerOpen = false;
+	let scanError = '';
 	let form = {
 		customer_id: null as number | null,
 		date: new Date().toISOString().slice(0, 10),
@@ -44,6 +48,21 @@
 
 	function removeItem(idx: number) {
 		form.items = form.items.filter((_, i) => i !== idx);
+	}
+
+	async function handleScan(code: string) {
+		try {
+			const product = await barcodeLookup(code);
+			const target = form.items[0];
+			if (target) {
+				target.product_id = product.id;
+				target.unit_price = product.sale_price;
+				form.items = [...form.items];
+			}
+			scannerOpen = false;
+		} catch (e) {
+			scanError = e instanceof Error ? e.message : 'Scan failed';
+		}
 	}
 
 	async function handleSave() {
@@ -99,7 +118,7 @@
 						<tr>
 							<td class="font-medium">{inv.number}</td>
 							<td>{inv.date ? inv.date.slice(0, 10) : ''}</td>
-							<td>						{(customersList.find(c => c.id === inv.customer_id) || {}).name || '—'}</td>
+							<td>{customersList.find(c => c.id === inv.customer_id)?.name || '—'}</td>
 							<td>{Number(inv.total).toLocaleString()}</td>
 							<td>
 								<span class="badge {inv.payment_status === 'paid' ? 'variant-filled-success' : inv.payment_status === 'partial' ? 'variant-filled-warning' : 'variant-filled-error'}">
@@ -158,7 +177,10 @@
 			<div class="space-y-2">
 				<div class="flex items-center justify-between">
 					<h3 class="font-semibold">Items</h3>
-					<button class="btn btn-sm variant-soft" on:click={addItem}>Add Item</button>
+					<div class="flex gap-2">
+						<button class="btn btn-sm variant-soft" on:click={() => addItem()}>Add Item</button>
+						<button class="btn btn-sm variant-soft" on:click={() => (scannerOpen = true)} disabled={form.items.length === 0}>Scan</button>
+					</div>
 				</div>
 				{#each form.items as item, idx}
 					<div class="grid grid-cols-1 sm:grid-cols-6 gap-2 p-3 bg-surface-100 dark:bg-surface-800 rounded">
@@ -184,3 +206,21 @@
 		</div>
 	</div>
 {/if}
+
+{#if scannerOpen}
+	<div class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" on:click={(e) => { if (e.target === e.currentTarget) scannerOpen = false; }}>
+		<div class="card p-4 w-full max-w-md space-y-3">
+			<h3 class="text-lg font-semibold">Scan Barcode</h3>
+			{#if scanError}
+				<div class="p-2 bg-error-100 dark:bg-error-900/30 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-300 rounded text-sm">
+					{scanError}
+				</div>
+			{/if}
+			<BarcodeScanner on:scanned={(e) => handleScan(e.detail)}></BarcodeScanner>
+			<div class="flex justify-end">
+				<button class="btn variant-soft" on:click={() => { scannerOpen = false; scanError = ''; }}>Close</button>
+			</div>
+		</div>
+	</div>
+{/if}
+</script>

@@ -1,7 +1,6 @@
 from datetime import UTC, datetime
-
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import asc, desc, or_
+from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
@@ -14,6 +13,33 @@ from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/products", tags=["products"])
+
+
+def _to_response(product: Product) -> dict:
+    base = {c.name: getattr(product, c.name) for c in Product.__table__.columns}
+    data = ProductResponse(**base).model_dump(mode="json")
+    data["category_name"] = product.category.name if product.category else None
+    data["tags"] = [{"id": t.id, "name": t.name, "color": t.color} for t in getattr(product, "tags", [])]
+    return data
+
+
+@router.get("/barcode-lookup")
+def barcode_lookup(code: str = Query(...), db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    product = db.query(Product).filter(
+        ((Product.sku == code) | (Product.barcode == code)),
+        Product.deleted_at.is_(None),
+    ).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return ok({
+        "id": product.id,
+        "name": product.name,
+        "sku": product.sku,
+        "barcode": product.barcode,
+        "sale_price": float(product.sale_price or 0),
+        "cost_price": float(product.cost_price or 0),
+        "unit": product.unit,
+    })
 
 
 @router.get("")
@@ -29,7 +55,7 @@ def list_products(
     sort_by: str | None = Query(default="name"),
     sort_dir: str | None = Query(default="asc"),
 ):
-    query = db.query(Product).options(joinedload(Product.category), joinedload(Product.tags)).filter(Product.deleted_at.is_(None))
+    query = db.query(Product).options(joinedload(Product.category)).filter(Product.deleted_at.is_(None))
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Product.name.ilike(like), Product.sku.ilike(like), Product.barcode.ilike(like)))
@@ -45,9 +71,7 @@ def list_products(
     items = query.offset((page - 1) * page_size).limit(page_size).all()
     results = []
     for item in items:
-        data = ProductResponse.model_validate(item).model_dump(mode="json")
-        data["category_name"] = item.category.name if item.category else None
-        data["tags"] = [{"id": t.id, "name": t.name, "color": t.color} for t in item.tags]
+        data = _to_response(item)
         results.append(data)
     return ok(results, meta={"page": page, "page_size": page_size, "total": total})
 
@@ -71,9 +95,7 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db), _user=
     db.add(product)
     db.commit()
     db.refresh(product)
-    data = ProductResponse.model_validate(product).model_dump(mode="json")
-    data["category_name"] = product.category.name if product.category else None
-    data["tags"] = [{"id": t.id, "name": t.name, "color": t.color} for t in product.tags]
+    data = _to_response(product)
     return ok(data, meta={"id": product.id})
 
 
@@ -82,9 +104,7 @@ def get_product(product_id: int, db: Session = Depends(get_db), _user=Depends(ge
     product = db.query(Product).options(joinedload(Product.category), joinedload(Product.tags)).get(product_id)
     if product is None or product.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Product not found")
-    data = ProductResponse.model_validate(product).model_dump(mode="json")
-    data["category_name"] = product.category.name if product.category else None
-    data["tags"] = [{"id": t.id, "name": t.name, "color": t.color} for t in product.tags]
+    data = _to_response(product)
     return ok(data)
 
 
@@ -110,9 +130,7 @@ def update_product(product_id: int, payload: ProductUpdate, db: Session = Depend
         product.tags = tags
     db.commit()
     db.refresh(product)
-    resp = ProductResponse.model_validate(product).model_dump(mode="json")
-    resp["category_name"] = product.category.name if product.category else None
-    resp["tags"] = [{"id": t.id, "name": t.name, "color": t.color} for t in product.tags]
+    resp = _to_response(product)
     return ok(resp)
 
 

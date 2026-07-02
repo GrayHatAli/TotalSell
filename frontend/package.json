@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@skeletonlabs/skeleton": "^2.10.0",
-    "@skeletonlabs/tw-plugin": "^0.4.0"
+    "@skeletonlabs/tw-plugin": "^0.4.0",
+    "@zxing/browser": "^0.2.0",
+    "@zxing/library": "^0.21.3"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.2.0",

@@ -3,7 +3,9 @@
 	import { listPurchaseInvoices, createPurchaseInvoice } from '$lib/api/purchaseInvoices';
 	import { listSuppliers } from '$lib/api/suppliers';
 	import { listProducts } from '$lib/api/products';
+	import { barcodeLookup } from '$lib/api/barcode';
 	import { t } from '$lib/i18n';
+	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 
 	let invoices: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 50 };
 	let products: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 200 };
@@ -11,10 +13,10 @@
 	let suppliersList: any[] = [];
 	let loading = true;
 	let error = '';
-	let page = 1;
-	let total = 0;
 
 	let showModal = false;
+	let scannerOpen = false;
+	let scanError = '';
 	let form = {
 		supplier_id: null as number | null,
 		date: new Date().toISOString().slice(0, 10),
@@ -38,7 +40,6 @@
 		suppliers = sup;
 		products = prod;
 		suppliersList = suppliers.items;
-		total = inv.items.length;
 		loading = false;
 	});
 
@@ -48,6 +49,21 @@
 
 	function removeItem(idx: number) {
 		form.items = form.items.filter((_, i) => i !== idx);
+	}
+
+	async function handleScan(code: string) {
+		try {
+			const product = await barcodeLookup(code);
+			const target = form.items[0];
+			if (target) {
+				target.product_id = product.id;
+				target.unit_cost = product.cost_price;
+				form.items = [...form.items];
+			}
+			scannerOpen = false;
+		} catch (e) {
+			scanError = e instanceof Error ? e.message : 'Scan failed';
+		}
 	}
 
 	async function handleSave() {
@@ -66,7 +82,6 @@
 			});
 			showModal = false;
 			invoices = await listPurchaseInvoices({ page: 1, page_size: 50 });
-			total = invoices.total;
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to create';
 		}
@@ -101,20 +116,20 @@
 					</tr>
 				</thead>
 				<tbody>
-				{#each invoices.items as inv}
-					<tr>
-						<td class="font-medium">{inv.number}</td>
-						<td>{inv.date ? inv.date.slice(0, 10) : ''}</td>
-						<td>						{(suppliersList.find(s => s.id === inv.supplier_id) || {}).name || '—'}</td>
-						<td>{Number(inv.total).toLocaleString()}</td>
-						<td>
-							<span class="badge {inv.payment_status === 'paid' ? 'variant-filled-success' : inv.payment_status === 'partial' ? 'variant-filled-warning' : 'variant-filled-error'}">
-								{inv.payment_status}
-							</span>
-						</td>
-						<td>{inv.payment_method || '—'}</td>
-					</tr>
-				{/each}
+					{#each invoices.items as inv}
+						<tr>
+							<td class="font-medium">{inv.number}</td>
+							<td>{inv.date ? inv.date.slice(0, 10) : ''}</td>
+							<td>{suppliersList.find(s => s.id === inv.supplier_id)?.name || '—'}</td>
+							<td>{Number(inv.total).toLocaleString()}</td>
+							<td>
+								<span class="badge {inv.payment_status === 'paid' ? 'variant-filled-success' : inv.payment_status === 'partial' ? 'variant-filled-warning' : 'variant-filled-error'}">
+									{inv.payment_status}
+								</span>
+							</td>
+							<td>{inv.payment_method || '—'}</td>
+						</tr>
+					{/each}
 				</tbody>
 			</table>
 		</div>
@@ -176,7 +191,10 @@
 			<div class="space-y-2">
 				<div class="flex items-center justify-between">
 					<h3 class="font-semibold">Items</h3>
-					<button class="btn btn-sm variant-soft" on:click={addItem}>Add Item</button>
+					<div class="flex gap-2">
+						<button class="btn btn-sm variant-soft" on:click={() => addItem()}>Add Item</button>
+						<button class="btn btn-sm variant-soft" on:click={() => (scannerOpen = true)} disabled={form.items.length === 0}>Scan</button>
+					</div>
 				</div>
 				{#each form.items as item, idx}
 					<div class="grid grid-cols-1 sm:grid-cols-6 gap-2 p-3 bg-surface-100 dark:bg-surface-800 rounded">
@@ -202,3 +220,13 @@
 		</div>
 	</div>
 {/if}
+
+
+			<BarcodeScanner on:scanned={(e) => handleScan(e.detail)}></BarcodeScanner>
+			<div class="flex justify-end">
+				<button class="btn variant-soft" on:click={() => { scannerOpen = false; scanError = ''; }}>Close</button>
+			</div>
+		</div>
+	</div>
+{/if}
+</script>
