@@ -221,7 +221,15 @@
 	</div>
 {/if}
 
-
+{#if scannerOpen}
+	<div class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" on:click={(e) => { if (e.target === e.currentTarget) scannerOpen = false; }}>
+		<div class="card p-4 w-full max-w-md space-y-3">
+			<h3 class="text-lg font-semibold">Scan Barcode</h3>
+			{#if scanError}
+				<div class="p-2 bg-error-100 dark:bg-error-900/30 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-300 rounded text-sm">
+					{scanError}
+				</div>
+			{/if}
 			<BarcodeScanner on:scanned={(e) => handleScan(e.detail)}></BarcodeScanner>
 			<div class="flex justify-end">
 				<button class="btn variant-soft" on:click={() => { scannerOpen = false; scanError = ''; }}>Close</button>
@@ -229,4 +237,3 @@
 		</div>
 	</div>
 {/if}
-</script>
