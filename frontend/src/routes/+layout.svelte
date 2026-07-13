@@ -1,28 +1,13 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import type { Workbox } from 'workbox-window';
-
-	onMount(() => {
-		if ('serviceWorker' in navigator) {
-			import('virtual:pwa-register').then(({ registerSW }) => {
-				registerSW({
-					immediate: true,
-					onNeedRefresh() {
-						if (confirm('New version available. Reload?')) {
-							location.reload();
-						}
-					}
-				});
-			});
-		}
-	});
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { currentUser, isAuthenticated } from '$lib/stores/auth';
 	import { locale, dir, setLocale, t } from '$lib/i18n';
 	import { fetchMe, logoutRequest } from '$lib/api/auth';
 	import { apiLogout, getRefreshToken } from '$lib/api/client';
+	import { browser } from '$app/environment';
 
 	let sidebarOpen = false;
 	let userMenuOpen = false;
@@ -55,7 +40,7 @@
 		}
 	});
 
-	$: if (!$isAuthenticated && $page.url.pathname !== '/login') {
+	$: if (browser && !$isAuthenticated && $page.url.pathname !== '/login') {
 		goto('/login');
 	}
 
