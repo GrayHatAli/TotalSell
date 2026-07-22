@@ -41,11 +41,11 @@
 
 		const [customers, products, invoices, inventory, sales] = results;
 		metrics = {
-			customers: customers.status === 'fulfilled' ? customers.value.total : metrics.customers,
-			products: products.status === 'fulfilled' ? products.value.total : metrics.products,
-			invoices: invoices.status === 'fulfilled' ? invoices.value.total : metrics.invoices,
-			revenue: sales.status === 'fulfilled' ? sales.value.total_revenue : metrics.revenue,
-			lowStock: inventory.status === 'fulfilled' ? inventory.value.low_stock_count : metrics.lowStock
+			customers: customers.status === 'fulfilled' ? (customers.value?.total ?? 0) : metrics.customers,
+			products: products.status === 'fulfilled' ? (products.value?.total ?? 0) : metrics.products,
+			invoices: invoices.status === 'fulfilled' ? (invoices.value?.total ?? 0) : metrics.invoices,
+			revenue: sales.status === 'fulfilled' ? (sales.value?.total_revenue ?? 0) : metrics.revenue,
+			lowStock: inventory.status === 'fulfilled' ? (inventory.value?.low_stock_count ?? 0) : metrics.lowStock
 		};
 
 		const failedRequest = results.find((result) => result.status === 'rejected');
@@ -60,11 +60,11 @@
 	$: _locale = $locale;
 	$: metricCards = _locale
 		? [
-				{ label: t('nav.customers'), value: metrics.customers.toLocaleString(), detail: t('dashboard.activeRelationships'), color: '#0f766e', href: '/customers' },
-				{ label: t('nav.products'), value: metrics.products.toLocaleString(), detail: t('dashboard.catalogItems'), color: '#2563eb', href: '/products' },
-				{ label: t('nav.sales'), value: metrics.invoices.toLocaleString(), detail: t('dashboard.saleInvoices'), color: '#b7791f', href: '/sales' },
-				{ label: t('reports.totalRevenue'), value: metrics.revenue.toLocaleString(), detail: t('dashboard.lastThirtyDays'), color: '#15803d', href: '/reports/sales' },
-				{ label: t('reports.lowStock'), value: metrics.lowStock.toLocaleString(), detail: t('reports.needsAttention'), color: '#be123c', href: '/reports/inventory' }
+				{ label: t('nav.customers'), value: (metrics.customers ?? 0).toLocaleString(), detail: t('dashboard.activeRelationships'), color: '#0f766e', href: '/customers' },
+				{ label: t('nav.products'), value: (metrics.products ?? 0).toLocaleString(), detail: t('dashboard.catalogItems'), color: '#2563eb', href: '/products' },
+				{ label: t('nav.sales'), value: (metrics.invoices ?? 0).toLocaleString(), detail: t('dashboard.saleInvoices'), color: '#b7791f', href: '/sales' },
+				{ label: t('reports.totalRevenue'), value: (metrics.revenue ?? 0).toLocaleString(), detail: t('dashboard.lastThirtyDays'), color: '#15803d', href: '/reports/sales' },
+				{ label: t('reports.lowStock'), value: (metrics.lowStock ?? 0).toLocaleString(), detail: t('dashboard.needsAttention'), color: '#be123c', href: '/reports/inventory' }
 			]
 		: [];
 </script>
