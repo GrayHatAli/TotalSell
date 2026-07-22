@@ -31,7 +31,7 @@
 
 	{#if loading}
 		<p>{t('common.loading')}</p>
-	{:else if entries.length === 0}
+	{:else if !entries || entries.length === 0}
 		<p>{t('common.noResults')}</p>
 	{:else}
 		<div class="card overflow-x-auto">

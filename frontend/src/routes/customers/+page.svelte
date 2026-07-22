@@ -135,7 +135,7 @@
 					<tr>
 						<td colspan="7" class="text-center py-8">{t('common.loading')}</td>
 					</tr>
-				{:else if customers.length === 0}
+				{:else if !customers || customers.length === 0}
 					<tr>
 						<td colspan="7" class="text-center py-8">{t('common.noResults')}</td>
 					</tr>

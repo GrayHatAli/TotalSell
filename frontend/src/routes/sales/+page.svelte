@@ -180,7 +180,7 @@
 					<h3 class="font-semibold">Items</h3>
 					<div class="flex gap-2">
 						<button class="btn btn-sm variant-soft" on:click={() => addItem()}>Add Item</button>
-						<button class="btn btn-sm variant-soft" on:click={() => (scannerOpen = true)} disabled={form.items.length === 0}>Scan</button>
+						<button class="btn btn-sm variant-soft" on:click={() => (scannerOpen = true)} disabled={(form.items ?? []).length === 0}>Scan</button>
 					</div>
 				</div>
 				{#each form.items as item, idx}
@@ -202,7 +202,7 @@
 
 			<div class="flex justify-end gap-2">
 				<button class="btn variant-soft" on:click={() => (showModal = false)}>{t('common.cancel')}</button>
-				<button class="btn btn-primary" on:click={handleSave} disabled={form.items.length === 0}>{t('common.save')}</button>
+				<button class="btn btn-primary" on:click={handleSave} disabled={(form.items ?? []).length === 0}>{t('common.save')}</button>
 			</div>
 		</div>
 	</div>

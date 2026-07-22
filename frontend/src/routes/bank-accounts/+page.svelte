@@ -79,7 +79,7 @@
 
 	{#if loading}
 		<p>{t('common.loading')}</p>
-	{:else if accounts.length === 0}
+	{:else if !accounts || accounts.length === 0}
 		<p>{t('common.noResults')}</p>
 	{:else}
 		<div class="card overflow-x-auto">

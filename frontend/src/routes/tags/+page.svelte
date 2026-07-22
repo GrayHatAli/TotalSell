@@ -99,7 +99,7 @@
 					<tr>
 						<td colspan="2" class="text-center py-8">{t('common.loading')}</td>
 					</tr>
-				{:else if filteredTags.length === 0}
+				{:else if !filteredTags || filteredTags.length === 0}
 					<tr>
 						<td colspan="2" class="text-center py-8">{t('common.noResults')}</td>
 					</tr>
