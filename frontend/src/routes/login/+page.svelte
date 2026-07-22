@@ -3,7 +3,7 @@
 	import { currentUser, isAuthenticated } from '$lib/stores/auth';
 	import { loginRequest } from '$lib/api/auth';
 	import { apiLogin } from '$lib/api/client';
-	import { setLocale, t } from '$lib/i18n';
+	import { locale, setLocale, t } from '$lib/i18n';
 	import { onMount } from 'svelte';
 
 	let email = '';
@@ -39,6 +39,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="min-h-screen flex items-center justify-center bg-surface-100 dark:bg-surface-900 px-4">
 	<div class="w-full max-w-sm">
 		<div class="text-center mb-8">
@@ -96,3 +97,4 @@
 		</div>
 	</div>
 </div>
+{/key}

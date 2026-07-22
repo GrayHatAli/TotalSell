@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 	import { listCategories, createCategory, updateCategory, deleteCategory, type Category } from '$lib/api/categories';
 
 	let categories: Category[] = [];
@@ -95,6 +95,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="space-y-4">
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="text-2xl font-bold">{t('nav.categories')}</h1>
@@ -209,3 +210,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

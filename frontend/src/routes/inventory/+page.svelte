@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { listInventoryMovements } from '$lib/api/inventory';
 	import { listProducts } from '$lib/api/products';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 
 	let movements: any[] = [];
 	let productsMap: Record<number, string> = {};
@@ -23,6 +23,7 @@
 	$: filtered = productId ? movements.filter((m) => m.product_id === Number(productId)) : movements;
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">{t('nav.inventory')}</h1>
 
@@ -83,3 +84,4 @@
 		</div>
 	{/if}
 </div>
+{/key}

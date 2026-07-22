@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">Reports</h1>
 	<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -19,3 +20,4 @@
 		</a>
 	</div>
 </div>
+{/key}

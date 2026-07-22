@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 	import { listTags, createTag, updateTag, deleteTag, type Tag } from '$lib/api/tags';
 
 	let tags: Tag[] = [];
@@ -65,6 +65,7 @@
 	$: filteredTags = tags.filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()));
 </script>
 
+{#key $locale}
 <div class="space-y-4">
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="text-2xl font-bold">{t('nav.tags')}</h1>
@@ -149,3 +150,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

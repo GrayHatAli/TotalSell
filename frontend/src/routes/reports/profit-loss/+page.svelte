@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getProfitLoss } from '$lib/api/reports';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 
 	let fromDate = '';
 	let toDate = '';
@@ -27,6 +27,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">Profit & Loss</h1>
 	<div class="flex gap-4">
@@ -60,3 +61,4 @@
 		</div>
 	{/if}
 </div>
+{/key}

@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { listPayments, createPayment } from '$lib/api/payments';
 	import { listBankAccounts } from '$lib/api/bankAccounts';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 
 	let payments: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 20 };
 	let accounts: any[] = [];
@@ -46,6 +46,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold">{t('nav.payments') || 'Payments'}</h1>
@@ -144,3 +145,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

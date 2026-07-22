@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 	import { listSuppliers, createSupplier, updateSupplier, deleteSupplier, type Supplier } from '$lib/api/suppliers';
 
 	let suppliers: Supplier[] = [];
@@ -92,6 +92,7 @@
 	const onSearch = debounce(() => loadSuppliers(), 300);
 </script>
 
+{#key $locale}
 <div class="space-y-4">
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="text-2xl font-bold">{t('nav.suppliers')}</h1>
@@ -205,3 +206,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

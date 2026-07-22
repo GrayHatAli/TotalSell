@@ -4,7 +4,7 @@
 	import { listSuppliers } from '$lib/api/suppliers';
 	import { listProducts } from '$lib/api/products';
 	import { barcodeLookup } from '$lib/api/barcode';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 
 	let invoices: { items: any[]; total: number; page: number; page_size: number } = { items: [], total: 0, page: 1, page_size: 50 };
@@ -88,6 +88,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold">{t('nav.purchases')}</h1>
@@ -237,3 +238,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

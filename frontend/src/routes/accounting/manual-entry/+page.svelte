@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { createJournalEntry } from '$lib/api/journalEntries';
 	import { listAccounts } from '$lib/api/accounts';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 
 	let accounts: { id: number; code: string; name: string }[] = [];
 	let description = '';
@@ -42,6 +42,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="max-w-3xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">Manual Journal Entry</h1>
 
@@ -99,3 +100,4 @@
 		</div>
 	</div>
 </div>
+{/key}

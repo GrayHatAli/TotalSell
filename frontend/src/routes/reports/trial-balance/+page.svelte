@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getTrialBalance } from '$lib/api/reports';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 
 	let rows: any[] = [];
 	let loading = true;
@@ -13,6 +13,7 @@
 	});
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<h1 class="text-2xl font-bold">Trial Balance</h1>
 	<label class="space-y-1">
@@ -49,3 +50,4 @@
 		</div>
 	{/if}
 </div>
+{/key}

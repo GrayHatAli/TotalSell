@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { listBankAccounts, createBankAccount, updateBankAccount, deleteBankAccount } from '$lib/api/bankAccounts';
-	import { t } from '$lib/i18n';
+	import { t, locale } from '$lib/i18n';
 	import { goto } from '$app/navigation';
 
 	let accounts: { id: number; name: string; account_type: string; bank_name?: string; current_balance: number; active: boolean }[] = [];
@@ -64,6 +64,7 @@
 	}
 </script>
 
+{#key $locale}
 <div class="max-w-5xl mx-auto space-y-6">
 	<div class="flex items-center justify-between">
 		<h1 class="text-2xl font-bold">{t('nav.banking') || 'Bank Accounts'}</h1>
@@ -160,3 +161,4 @@
 		</div>
 	</div>
 {/if}
+{/key}

@@ -9,9 +9,10 @@ const translations: Record<Locale, Record<string, string>> = { en, fa };
 export const locale = writable<Locale>('en');
 export const dir = derived(locale, ($locale) => ($locale === 'fa' ? 'rtl' : 'ltr'));
 
+let currentLocale: Locale = 'en';
+locale.subscribe((l) => (currentLocale = l));
+
 export function t(key: string): string {
-	let currentLocale: Locale = 'en';
-	locale.subscribe((l) => (currentLocale = l))();
 	return translations[currentLocale]?.[key] ?? translations['en']?.[key] ?? key;
 }
 
