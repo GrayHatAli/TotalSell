@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { BrowserMultiFormatReader } from '@zxing/browser';
+	import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
 	import { createEventDispatcher } from 'svelte';
 
 	const dispatch = createEventDispatcher();
 
 	let videoEl: HTMLVideoElement;
 	let reader: BrowserMultiFormatReader | null = null;
+	let controls: IScannerControls | null = null;
 	let scanning = false;
 	let error = '';
 
@@ -16,7 +17,7 @@
 			const devices = await BrowserMultiFormatReader.listVideoInputDevices();
 			const deviceId = devices[0]?.deviceId;
 			if (!deviceId) throw new Error('No camera found');
-			await reader.decodeFromVideoDevice(deviceId, videoEl, (result) => {
+			controls = await reader.decodeFromVideoDevice(deviceId, videoEl, (result) => {
 				if (result) {
 					dispatch('scanned', result.getText());
 					stopScanning();
@@ -29,10 +30,9 @@
 	});
 
 	function stopScanning() {
-		if (reader) {
-			reader.reset();
-			reader = null;
-		}
+		controls?.stop();
+		controls = null;
+		reader = null;
 		scanning = false;
 	}
 
@@ -47,7 +47,9 @@
 			{error} — use manual entry instead.
 		</div>
 	{/if}
-	<video bind:this={videoEl} class="w-full rounded border" style="max-height: 240px;"></video>
+	<video bind:this={videoEl} class="w-full rounded border" style="max-height: 240px;">
+		<track kind="captions" />
+	</video>
 	<div class="flex justify-end">
 		<button class="btn btn-sm variant-soft-error" on:click={stopScanning} disabled={!scanning}>Cancel</button>
 	</div>
