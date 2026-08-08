@@ -12,13 +12,20 @@ router = APIRouter(prefix="/bank-accounts", tags=["bank-accounts"])
 
 
 @router.get("")
-def list_bank_accounts(db: Session = Depends(get_db), _user=Depends(get_current_user), search: str | None = None):
+def list_bank_accounts(
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+    search: str | None = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
     query = db.query(BankAccount).filter(BankAccount.deleted_at.is_(None))
     if search:
         like = f"%{search}%"
         query = query.filter(or_(BankAccount.name.ilike(like), BankAccount.bank_name.ilike(like)))
-    items = query.order_by(BankAccount.name).all()
-    return ok([BankAccountResponse.model_validate(i).model_dump(mode="json") for i in items])
+    items = query.order_by(BankAccount.name).offset((page - 1) * page_size).limit(page_size).all()
+    total = query.count()
+    return ok([BankAccountResponse.model_validate(i).model_dump(mode="json") for i in items], meta={"page": page, "page_size": page_size, "total": total})
 
 
 @router.post("")

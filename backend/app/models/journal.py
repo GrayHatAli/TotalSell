@@ -23,9 +23,10 @@ class JournalLine(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id", ondelete="CASCADE"), nullable=False)
-    account_id: Mapped[int] = mapped_column(nullable=False, index=True)
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", ondelete="RESTRICT"), nullable=False, index=True)
     debit: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     credit: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     entry: Mapped[JournalEntry] = relationship(back_populates="lines")
+    account: Mapped["Account"] = relationship("Account", backref="journal_lines")

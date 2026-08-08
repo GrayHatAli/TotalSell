@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -5,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.tag import Tag
 from app.schemas.common import ok
-from app.schemas.tag import TagCreate, TagResponse
+from app.schemas.tag import TagCreate, TagResponse, TagUpdate
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/tags", tags=["tags"])
@@ -35,3 +37,38 @@ def create_tag(payload: TagCreate, db: Session = Depends(get_db), _user=Depends(
     db.commit()
     db.refresh(tag)
     return ok(TagResponse.model_validate(tag).model_dump(mode="json"), meta={"id": tag.id})
+
+
+@router.get("/{tag_id}")
+def get_tag(tag_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    tag = db.get(Tag, tag_id)
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return ok(TagResponse.model_validate(tag))
+
+
+@router.patch("/{tag_id}")
+def update_tag(tag_id: int, payload: TagUpdate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    tag = db.get(Tag, tag_id)
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    if payload.name:
+        exists = db.query(Tag).filter(Tag.name == payload.name, Tag.id != tag_id).first()
+        if exists:
+            raise HTTPException(status_code=400, detail="Tag name already exists")
+    data = payload.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(tag, key, value)
+    db.commit()
+    db.refresh(tag)
+    return ok(TagResponse.model_validate(tag))
+
+
+@router.delete("/{tag_id}")
+def delete_tag(tag_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    tag = db.get(Tag, tag_id)
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    db.delete(tag)
+    db.commit()
+    return ok({"status": "deleted"})

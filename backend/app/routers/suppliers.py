@@ -5,6 +5,9 @@ from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.models.payment import Payment
+from app.models.purchase import PurchaseInvoice
+from app.services.reports import _d
 from app.models.supplier import Supplier
 from app.schemas.common import ok
 from app.schemas.supplier import SupplierCreate, SupplierResponse, SupplierUpdate
@@ -49,6 +52,43 @@ def get_supplier(supplier_id: int, db: Session = Depends(get_db), _user=Depends(
     if supplier is None or supplier.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Supplier not found")
     return ok(SupplierResponse.model_validate(supplier).model_dump(mode="json"))
+
+
+@router.get("/{supplier_id}/statement")
+def get_supplier_statement(supplier_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    """Get supplier statement showing all purchases and payments"""
+    supplier = db.get(Supplier, supplier_id)
+    if supplier is None or supplier.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Supplier not found")
+    
+    # Get all purchase invoices for this supplier
+    purchases = (db.query(PurchaseInvoice)
+                 .filter(PurchaseInvoice.supplier_id == supplier_id)
+                 .order_by(PurchaseInvoice.date.desc()).all())
+    
+    # Get all payments for this supplier
+    payments = (db.query(Payment)
+                .filter(Payment.reference_type == "PURCHASE", Payment.reference_id == supplier_id)
+                .order_by(Payment.date.desc()).all())
+    
+    # Calculate totals
+    total_billed = sum(_d(inv.total) for inv in purchases)
+    total_paid = sum(_d(p.amount) for p in payments)
+    outstanding = float(total_billed - total_paid)
+    
+    return ok({
+        "supplier_id": supplier.id,
+        "name": supplier.name,
+        "phone": supplier.phone,
+        "email": supplier.email,
+        "total_billed": float(total_billed),
+        "total_paid": float(total_paid),
+        "outstanding_balance": outstanding,
+        "purchase_count": len(purchases),
+        "payment_count": len(payments),
+        "purchases": [PurchaseInvoice.model_validate(p).model_dump(mode="json") for p in purchases],
+        "payments": [Payment.model_validate(p).model_dump(mode="json") for p in payments],
+    })
 
 
 @router.patch("/{supplier_id}")

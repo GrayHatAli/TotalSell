@@ -8,6 +8,7 @@ from app.models.category import Category
 from app.models.product import Product
 from app.models.product_tag import ProductTag
 from app.models.tag import Tag
+from app.services.reports import _d
 from app.schemas.common import ok
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.services.auth import get_current_user
@@ -106,6 +107,60 @@ def get_product(product_id: int, db: Session = Depends(get_db), _user=Depends(ge
         raise HTTPException(status_code=404, detail="Product not found")
     data = _to_response(product)
     return ok(data)
+
+
+@router.get("/{product_id}/inventory")
+def get_product_inventory(product_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    """Get product inventory details including stock levels and cost information"""
+    product = db.query(Product).get(product_id)
+    if product is None or product.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Get inventory movements for this product
+    movements = db.query(InventoryMovement).filter(InventoryMovement.product_id == product_id).all()
+    
+    # Calculate stock levels
+    in_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "IN")
+    out_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "OUT")
+    adjustment_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "ADJ")
+    
+    stock_on_hand = float(in_qty - out_qty)
+    total_value = float(stock_on_hand * (product.cost_price or 0))
+    
+    return ok({
+        "product": {
+            "id": product.id,
+            "name": product.name,
+            "sku": product.sku,
+            "barcode": product.barcode,
+            "category": product.category.name if product.category else None,
+            "product_type": product.product_type,
+        },
+        "stock_levels": {
+            "on_hand": stock_on_hand,
+            "in_transit": 0,  # Not tracked yet
+        },
+        "valuation": {
+            "unit_cost": float(product.cost_price or 0),
+            "total_value": total_value,
+        },
+        "cost_history": {
+            "min_cost": float(min((_d(m.unit_cost) for m in movements), default=0)),
+            "max_cost": float(max((_d(m.unit_cost) for m in movements), default=0)),
+        },
+        "movements": [
+            {
+                "id": m.id,
+                "type": m.movement_type,
+                "quantity": float(m.quantity),
+                "unit_cost": float(m.unit_cost),
+                "reference_type": m.reference_type,
+                "reference_id": m.reference_id,
+                "created_at": m.created_at.isoformat() if m.created_at else None,
+            }
+            for m in movements
+        ],
+    })
 
 
 @router.patch("/{product_id}")

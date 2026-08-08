@@ -51,7 +51,6 @@ def list_purchase_invoices(
 
 @router.post("")
 def create_purchase_invoice_endpoint(payload: PurchaseInvoiceCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    db.refresh = lambda obj: None  # no-op to avoid unused import issues
     invoice = create_purchase_invoice(db, payload.model_dump(), user_id=getattr(_user, "id", None))
     data = _to_response(invoice)
     data["items"] = []

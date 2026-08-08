@@ -81,13 +81,25 @@ def get_profit_loss(db: Session, from_date: datetime, to_date: datetime) -> dict
 def get_balance_sheet(db: Session, as_of_date: datetime | None = None) -> dict:
     base_filter = JournalEntry.date <= (as_of_date or datetime.now(UTC))
 
-    asset_query = db.query(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0)).join(Account, Account.id == JournalLine.account_id).filter(Account.account_type == "ASSET").filter(base_filter)
+    asset_query = (db.query(func.coalesce(func.sum(JournalLine.debit - JournalLine.credit), 0))
+                   .join(Account, Account.id == JournalLine.account_id)
+                   .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+                   .filter(Account.account_type == "ASSET")
+                   .filter(base_filter))
     total_assets = float(asset_query.scalar() or 0)
 
-    liability_query = db.query(func.coalesce(func.sum(JournalLine.credit - JournalLine.debit), 0)).join(Account, Account.id == JournalLine.account_id).filter(Account.account_type == "LIABILITY").filter(base_filter)
+    liability_query = (db.query(func.coalesce(func.sum(JournalLine.credit - JournalLine.debit), 0))
+                       .join(Account, Account.id == JournalLine.account_id)
+                       .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+                       .filter(Account.account_type == "LIABILITY")
+                       .filter(base_filter))
     total_liabilities = float(liability_query.scalar() or 0)
 
-    equity_query = db.query(func.coalesce(func.sum(JournalLine.credit - JournalLine.debit), 0)).join(Account, Account.id == JournalLine.account_id).filter(Account.account_type == "EQUITY").filter(base_filter)
+    equity_query = (db.query(func.coalesce(func.sum(JournalLine.credit - JournalLine.debit), 0))
+                    .join(Account, Account.id == JournalLine.account_id)
+                    .join(JournalEntry, JournalEntry.id == JournalLine.entry_id)
+                    .filter(Account.account_type == "EQUITY")
+                    .filter(base_filter))
     total_equity = float(equity_query.scalar() or 0)
 
     return {

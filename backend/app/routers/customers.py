@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.customer import Customer
+from app.models.payment import Payment
+from app.models.sale import SaleInvoice
+from app.services.reports import _d
 from app.schemas.common import ok
 from app.schemas.customer import CustomerCreate, CustomerResponse, CustomerUpdate
 from app.services.auth import get_current_user
@@ -49,6 +52,43 @@ def get_customer(customer_id: int, db: Session = Depends(get_db), _user=Depends(
     if customer is None or customer.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Customer not found")
     return ok(CustomerResponse.model_validate(customer).model_dump(mode="json"))
+
+
+@router.get("/{customer_id}/statement")
+def get_customer_statement(customer_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    """Get customer statement showing all invoices, payments, and outstanding balance"""
+    customer = db.get(Customer, customer_id)
+    if customer is None or customer.deleted_at is not None:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Get all sale invoices for this customer
+    invoices = (db.query(SaleInvoice)
+                .filter(SaleInvoice.customer_id == customer_id)
+                .order_by(SaleInvoice.date.desc()).all())
+    
+    # Get all payments for this customer
+    payments = (db.query(Payment)
+                .filter(Payment.reference_type == "SALE", Payment.reference_id == customer_id)
+                .order_by(Payment.date.desc()).all())
+    
+    # Calculate totals
+    total_billed = sum(_d(inv.total) for inv in invoices)
+    total_paid = sum(_d(p.amount) for p in payments)
+    outstanding = float(total_billed - total_paid)
+    
+    return ok({
+        "customer_id": customer.id,
+        "name": customer.name,
+        "phone": customer.phone,
+        "email": customer.email,
+        "total_billed": float(total_billed),
+        "total_paid": float(total_paid),
+        "outstanding_balance": outstanding,
+        "invoice_count": len(invoices),
+        "payment_count": len(payments),
+        "invoices": [SaleInvoice.model_validate(i).model_dump(mode="json") for i in invoices],
+        "payments": [Payment.model_validate(p).model_dump(mode="json") for p in payments],
+    })
 
 
 @router.patch("/{customer_id}")

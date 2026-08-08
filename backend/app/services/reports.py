@@ -3,7 +3,8 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import func, or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.exc import MultipleResultsFound
 
 from app.models.category import Category
 from app.models.customer import Customer
@@ -19,32 +20,39 @@ def _d(v: Any) -> Decimal:
 
 
 def get_sales_report(db: Session, from_date: datetime, to_date: datetime) -> dict:
-    query = db.query(SaleInvoice).filter(SaleInvoice.date >= from_date).filter(SaleInvoice.date <= to_date)
-    invoices = query.order_by(SaleInvoice.date.desc()).all()
-
+    query = (db.query(SaleInvoice)
+             .options(
+                joinedload(SaleInvoice.customer),
+                joinedload(SaleInvoice.items).joinedload(SaleItem.product)
+             )
+             .filter(SaleInvoice.date >= from_date)
+             .filter(SaleInvoice.date <= to_date)
+             .all())
+    
+    invoices = query  # Load all with joined data
+    
     total_revenue = sum(_d(inv.total) for inv in invoices)
     by_customer: dict[int, dict] = {}
     by_product: dict[int, dict] = {}
-
+    
     for inv in invoices:
+        # Customer data already loaded via joinedload
         cust_id = inv.customer_id or 0
         by_customer.setdefault(cust_id, {"name": "Walk-in", "total": Decimal("0"), "count": 0})
-        if cust_id:
-            customer = db.get(Customer, cust_id)
-            if customer:
-                by_customer[cust_id]["name"] = customer.name
+        if cust_id and inv.customer:
+            by_customer[cust_id]["name"] = inv.customer.name
         by_customer[cust_id]["total"] += _d(inv.total)
         by_customer[cust_id]["count"] += 1
-
+        
         for item in inv.items:
+            # Product data already loaded via nested joinedload
             pid = item.product_id or 0
             by_product.setdefault(pid, {"name": "Unknown", "total": Decimal("0"), "qty": Decimal("0")})
-            product = db.get(Product, pid) if pid else None
-            if product:
-                by_product[pid]["name"] = product.name
+            if item.product:
+                by_product[pid]["name"] = item.product.name
             by_product[pid]["total"] += _d(item.line_total)
             by_product[pid]["qty"] += _d(item.quantity)
-
+    
     return {
         "total_revenue": float(total_revenue),
         "invoice_count": len(invoices),
@@ -90,9 +98,18 @@ def get_purchase_report(db: Session, from_date: datetime, to_date: datetime) -> 
 
 
 def get_inventory_report(db: Session) -> dict:
+    # First get product base data
     products = db.query(Product).filter(Product.deleted_at.is_(None)).all()
     items = []
     for p in products:
+        # Get or compute category name
+        category_name = None
+        if p.category_id:
+            cat = db.get(Category, p.category_id)
+            if cat:
+                category_name = cat.name
+        
+        # Get inventory quantity from movements (simpler approach)
         movements = db.query(InventoryMovement).filter(InventoryMovement.product_id == p.id).all()
         in_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "IN")
         out_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "OUT")
@@ -101,7 +118,7 @@ def get_inventory_report(db: Session) -> dict:
             "product_id": p.id,
             "name": p.name,
             "sku": p.sku,
-            "category": p.category.name if p.category else None,
+            "category": category_name,
             "stock": stock,
             "min_stock": float(_d(p.min_stock)),
             "cost_price": float(_d(p.cost_price)),

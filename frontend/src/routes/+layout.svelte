@@ -8,6 +8,9 @@
 	import { fetchMe, logoutRequest } from '$lib/api/auth';
 	import { apiLogout, getRefreshToken } from '$lib/api/client';
 	import { browser } from '$app/environment';
+import Toast from '$lib/components/Toast.svelte';
+	
+	
 
 	let sidebarOpen = false;
 	let userMenuOpen = false;
@@ -76,12 +79,7 @@
 		{ label: 'nav.suppliers', href: '/suppliers', icon: 'M3 20h18V9l-5 3V9l-5 3V4H3v16Zm4-4h3v2H7v-2Zm6 0h3v2h-3v-2Z' },
 		{ label: 'nav.products', href: '/products', icon: 'M12 3 3.5 7.5 12 12l8.5-4.5L12 3Zm-8 7v7l8 4 8-4v-7l-8 4-8-4Z' },
 		{ label: 'nav.categories', href: '/categories', icon: 'M4 5h7v6H4V5Zm9 0h7v6h-7V5ZM4 13h7v6H4v-6Zm9 0h7v6h-7v-6Z' },
-		{ label: 'nav.tags', href: '/tags', icon: 'M4 5v6.5L12.5 20 20 12.5 11.5 4H5a1 1 0 0 0-1 1Zm4 4.5A1.5 1.5 0 1 1 8 6a1.5 1.5 0 0 1 0 3Z' },
-		{ label: 'nav.purchases', href: '/purchases', icon: 'M5 4h2l1.2 10.5A2 2 0 0 0 10.2 16H18l2-8H8.7M10 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z' },
-		{ label: 'nav.sales', href: '/sales', icon: 'M12 3v18m5-14H9.5a3 3 0 0 0 0 6H14a3 3 0 0 1 0 6H6' },
-		{ label: 'nav.accounting', href: '/accounting', icon: 'M5 4h14v16H5V4Zm3 4h8M8 12h2m3 0h3M8 16h2m3 0h3' },
-		{ label: 'nav.inventory', href: '/inventory', icon: 'M5 6h14v4H5V6Zm1 6h12v6H6v-6Zm4 2h4' },
-		{ label: 'nav.reports', href: '/reports', icon: 'M5 19V9m7 10V5m7 14v-7' }
+		{ label: 'nav.tags', href: '/tags', icon: 'M4 5v6.5L12.5 20 20 12.5 11.5 4H5' }
 	];
 </script>
 

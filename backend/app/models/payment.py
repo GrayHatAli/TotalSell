@@ -1,4 +1,6 @@
 from datetime import datetime
+
+from decimal import Decimal
 from sqlalchemy import DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -13,6 +15,6 @@ class Payment(TimestampMixin, Base):
     reference_id: Mapped[int] = mapped_column(nullable=False, index=True)
     amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
     method: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
-    bank_account_id: Mapped[int | None] = mapped_column(nullable=True, index=True)
+    bank_account_id: Mapped[int | None] = mapped_column(ForeignKey("bank_accounts.id", ondelete="SET NULL"), nullable=True, index=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     note: Mapped[str | None] = mapped_column(nullable=True)
