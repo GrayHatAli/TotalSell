@@ -25,6 +25,7 @@ class PurchaseInvoice(TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     journal_entry_id: Mapped[int | None] = mapped_column(ForeignKey("journal_entries.id"), nullable=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True, unique=True, index=True)
 
     items: Mapped[list["PurchaseItem"]] = relationship(back_populates="invoice", cascade="all, delete-orphan")
     supplier: Mapped["Supplier"] = relationship(backref="purchase_invoices")

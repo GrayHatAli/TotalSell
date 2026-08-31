@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.schemas.invoice import PurchaseItemCreate
+
 
 class PurchaseInvoiceBase(BaseModel):
     supplier_id: int = Field(..., ge=1)
@@ -13,10 +15,11 @@ class PurchaseInvoiceBase(BaseModel):
     payment_method: str | None = Field(default=None, max_length=20)
     payment_status: str = Field(default="unpaid", max_length=20)
     notes: str | None = None
+    idempotency_key: str | None = Field(default=None, max_length=100)
 
 
 class PurchaseInvoiceCreate(PurchaseInvoiceBase):
-    items: list[dict] = Field(default_factory=list, min_length=1)
+    items: list[PurchaseItemCreate] = Field(default_factory=list, min_length=1)
 
 
 class PurchaseInvoiceResponse(PurchaseInvoiceBase):

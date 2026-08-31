@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.schemas.invoice import SaleItemCreate
+
 
 class SaleInvoiceBase(BaseModel):
     customer_id: int | None = Field(default=None, ge=1)
@@ -12,10 +14,51 @@ class SaleInvoiceBase(BaseModel):
     payment_method: str | None = Field(default=None, max_length=20)
     payment_status: str = Field(default="unpaid", max_length=20)
     notes: str | None = None
+    idempotency_key: str | None = Field(default=None, max_length=100)
+
+
+class SaleReturnItemCreate(BaseModel):
+    product_id: int = Field(..., ge=1)
+    quantity: float = Field(..., gt=0)
+
+
+class SaleReturnCreate(BaseModel):
+    date: datetime | None = None
+    reason: str | None = Field(default=None, max_length=1000)
+    items: list[SaleReturnItemCreate] = Field(..., min_length=1)
+
+
+class SaleReturnItemResponse(BaseModel):
+    id: int
+    product_id: int | None = None
+    quantity: float
+    unit_price: float
+    tax_pct: float
+    line_total: float
+    unit_cost: float | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class SaleReturnResponse(BaseModel):
+    id: int
+    number: str
+    sale_invoice_id: int
+    date: datetime
+    reason: str | None = None
+    subtotal: float
+    tax_amount: float
+    cogs_amount: float
+    total: float
+    journal_entry_id: int | None = None
+    created_at: datetime
+    items: list[SaleReturnItemResponse] = Field(default_factory=list)
+
+    model_config = {"from_attributes": True}
 
 
 class SaleInvoiceCreate(SaleInvoiceBase):
-    items: list[dict] = Field(default_factory=list, min_length=1)
+    items: list[SaleItemCreate] = Field(default_factory=list, min_length=1)
 
 
 class SaleInvoiceResponse(SaleInvoiceBase):

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas.common import ok
-from app.services.accounting import create_manual_journal_entry, get_balance_sheet, get_general_ledger, get_profit_loss, get_trial_balance
+from app.services.accounting import create_manual_journal_entry, create_reversal_entry, get_balance_sheet, get_general_ledger, get_profit_loss, get_trial_balance
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/accounting", tags=["accounting"])
@@ -27,6 +27,16 @@ def create_journal_entry(payload: dict, db: Session = Depends(get_db), _user = D
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return ok({"id": entry.id, "date": entry.date.isoformat(), "description": entry.description})
+
+
+@router.post("/journal-entries/{entry_id}/reversal")
+def reverse_journal_entry(entry_id: int, db: Session = Depends(get_db), _user = Depends(get_current_user)):
+    """Correct a posted entry by creating a linked reversing entry (immutable history)."""
+    try:
+        entry = create_reversal_entry(db, entry_id, user_id=getattr(_user, "id", None))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return ok({"id": entry.id, "reverses_entry_id": entry.reference_id, "description": entry.description})
 
 
 @router.get("/journal-entries")

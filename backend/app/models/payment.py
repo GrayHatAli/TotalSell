@@ -18,3 +18,5 @@ class Payment(TimestampMixin, Base):
     bank_account_id: Mapped[int | None] = mapped_column(ForeignKey("bank_accounts.id", ondelete="SET NULL"), nullable=True, index=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     note: Mapped[str | None] = mapped_column(nullable=True)
+    journal_entry_id: Mapped[int | None] = mapped_column(ForeignKey("journal_entries.id"), nullable=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), nullable=True, unique=True, index=True)

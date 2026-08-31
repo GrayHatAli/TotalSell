@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.sale import SaleInvoice, SaleItem
+from app.models.sale import SaleInvoice, SaleItem, SaleReturn
 from app.schemas.common import ok
 from app.schemas.invoice import SaleItemResponse
-from app.schemas.sale import SaleInvoiceCreate, SaleInvoiceResponse
+from app.schemas.sale import SaleInvoiceCreate, SaleReturnCreate, SaleReturnResponse, SaleInvoiceResponse
 from app.services.auth import get_current_user
 from app.services.invoice import create_sale_invoice
+from app.services.sale_return import create_sale_return
 
 router = APIRouter(prefix="/sale-invoices", tags=["sale-invoices"])
 
@@ -48,8 +49,18 @@ def list_sale_invoices(
 
 
 @router.post("")
-def create_sale_invoice_endpoint(payload: SaleInvoiceCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    invoice = create_sale_invoice(db, payload.model_dump(), user_id=getattr(_user, "id", None))
+def create_sale_invoice_endpoint(
+    payload: SaleInvoiceCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    if idempotency_key and not payload.idempotency_key:
+        payload.idempotency_key = idempotency_key
+    try:
+        invoice = create_sale_invoice(db, payload, user_id=getattr(_user, "id", None))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     data = _to_response(invoice)
     data["items"] = []
     return ok(data, meta={"id": invoice.id})
@@ -61,3 +72,30 @@ def get_sale_invoice(invoice_id: int, db: Session = Depends(get_db), _user=Depen
     if invoice is None:
         raise HTTPException(status_code=404, detail="Sale invoice not found")
     return ok(_to_response(invoice))
+
+
+@router.post("/{invoice_id}/returns")
+def create_sale_return_endpoint(
+    invoice_id: int,
+    payload: SaleReturnCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+):
+    """Credit note: reverse revenue/tax/COGS and restock returned goods."""
+    try:
+        ret = create_sale_return(db, invoice_id, payload, user_id=getattr(_user, "id", None))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    data = SaleReturnResponse.model_validate(ret).model_dump(mode="json")
+    return ok(data, meta={"id": ret.id})
+
+
+@router.get("/{invoice_id}/returns")
+def list_sale_returns(invoice_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    returns = (
+        db.query(SaleReturn)
+        .filter(SaleReturn.sale_invoice_id == invoice_id)
+        .order_by(SaleReturn.id)
+        .all()
+    )
+    return ok([SaleReturnResponse.model_validate(r).model_dump(mode="json") for r in returns])

@@ -102,7 +102,7 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db), _user=
 
 @router.get("/{product_id}")
 def get_product(product_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    product = db.query(Product).options(joinedload(Product.category), joinedload(Product.tags)).get(product_id)
+    product = db.get(Product, product_id, options=(joinedload(Product.category), joinedload(Product.tags)))
     if product is None or product.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Product not found")
     data = _to_response(product)
@@ -112,7 +112,7 @@ def get_product(product_id: int, db: Session = Depends(get_db), _user=Depends(ge
 @router.get("/{product_id}/inventory")
 def get_product_inventory(product_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user)):
     """Get product inventory details including stock levels and cost information"""
-    product = db.query(Product).get(product_id)
+    product = db.get(Product, product_id)
     if product is None or product.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Product not found")
     

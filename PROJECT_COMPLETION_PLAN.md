@@ -73,7 +73,8 @@ Acceptance criteria:
 ### Phase 1 — Transaction integrity and API contract
 
 **Priority:** P0  
-**Goal:** Make every financial write deterministic, atomic, typed, and safe to retry.
+**Goal:** Make every financial write deterministic, atomic, typed, and safe to retry.  
+**Status:** Completed on 2026-08-31: single-session atomic invoice posting, no payload mutation, Decimal arithmetic end to end, row-locked invoice number allocation, active-entity validation, sale stock enforcement (physical products), controlled inventory adjustments with audit records, transactional payment posting (payment + balanced journal + invoice status), idempotency keys (payload field or `Idempotency-Key` header) for invoices and payments, audit-log wiring for invoice/payment/adjustment/return/reversal writes, and a journal-entry reversal endpoint (posted entries are immutable; duplicate reversals rejected). A PostgreSQL concurrent-creation test exists (`test_concurrent_invoice_creation_postgres`); it requires `DATABASE_URL=postgresql://...` to execute and is skipped on SQLite.
 
 Backend tasks:
 
@@ -101,7 +102,8 @@ Acceptance criteria:
 ### Phase 2 — Inventory correctness and stock workflows
 
 **Priority:** P0  
-**Goal:** Replace aggregate movement arithmetic with auditable stock and cost-layer behavior.
+**Goal:** Replace aggregate movement arithmetic with auditable stock and cost-layer behavior.  
+**Status:** Substantially implemented on 2026-08-31: `inventory_lots` FIFO cost layers created on purchase, consumed FIFO on sales and adjustments with persisted `lot_allocations` (COGS reproducible from allocations, not `cost_price`), lot-based availability so negative stock is impossible, and sale returns (credit notes, `RET-S` series) that reverse revenue/tax/settlement/COGS and restock goods as new lots. Legacy movement history is backfilled into aggregate opening lots by the migration. Covered by FIFO, adjustment, and return tests in `tests/test_transaction_integrity.py`. Remaining: purchase returns/supplier credit notes, batch/expiry UI, and report-facing lot views.
 
 Tasks:
 

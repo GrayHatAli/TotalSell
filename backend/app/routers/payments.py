@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
@@ -7,6 +7,7 @@ from app.models.payment import Payment
 from app.schemas.common import ok
 from app.schemas.payment import PaymentCreate, PaymentResponse
 from app.services.auth import get_current_user
+from app.services.payment import create_payment as create_payment_service
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
@@ -32,9 +33,16 @@ def list_payments(
 
 
 @router.post("")
-def create_payment(payload: PaymentCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    payment = Payment(**payload.model_dump())
-    db.add(payment)
-    db.commit()
-    db.refresh(payment)
+def create_payment(
+    payload: PaymentCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    if idempotency_key and not payload.idempotency_key:
+        payload.idempotency_key = idempotency_key
+    try:
+        payment = create_payment_service(db, payload, user_id=getattr(_user, "id", None))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return ok(PaymentResponse.model_validate(payment).model_dump(mode="json"), meta={"id": payment.id})

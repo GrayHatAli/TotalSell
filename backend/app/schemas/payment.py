@@ -11,6 +11,7 @@ class PaymentBase(BaseModel):
     bank_account_id: int | None = Field(default=None, ge=1)
     date: datetime
     note: str | None = None
+    idempotency_key: str | None = Field(default=None, max_length=100)
 
 
 class PaymentCreate(PaymentBase):
@@ -19,6 +20,7 @@ class PaymentCreate(PaymentBase):
 
 class PaymentResponse(PaymentBase):
     id: int
+    journal_entry_id: int | None = None
     created_at: datetime
     updated_at: datetime
 

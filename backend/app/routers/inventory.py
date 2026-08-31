@@ -3,24 +3,22 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.inventory import InventoryMovement
+from app.models.inventory import InventoryLot, InventoryMovement, LotAllocation
 from app.models.product import Product
+from app.models.user import AuditLog
 from app.schemas.common import ok
 from app.services.auth import get_current_user
 
 
-class InventoryMovementCreate(BaseModel):
+class InventoryAdjustmentCreate(BaseModel):
     product_id: int = Field(..., ge=1)
-    movement_type: str = Field(..., pattern="^(IN|OUT|ADJ)$")
     quantity: float = Field(..., gt=0)
     unit_cost: float = Field(ge=0)
-    reference_type: str | None = None
-    reference_id: int | None = None
-    note: str | None = None
+    reason: str = Field(..., min_length=3, max_length=500)
 
 
 router = APIRouter(prefix="/inventory-movements", tags=["inventory"])
@@ -59,23 +57,84 @@ def list_inventory_movements(
     return ok(results, meta={"page": page, "page_size": page_size, "total": total})
 
 
-@router.post("")
-def create_inventory_movement(payload: InventoryMovementCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    # Check if product exists
+@router.post("/adjustments", status_code=200)
+def create_inventory_adjustment(
+    payload: InventoryAdjustmentCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+):
+    """Record a controlled stock adjustment (shrinkage/count correction).
+
+    Arbitrary movement creation is intentionally not supported: inbound stock
+    comes from purchase invoices, outbound from sale invoices, and adjustments
+    require an authenticated actor plus an auditable reason.
+    """
     product = db.get(Product, payload.product_id)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+    if product.deleted_at is not None or not product.active:
+        raise HTTPException(status_code=422, detail="Product is not active")
+
+    available = (
+        db.query(func.coalesce(func.sum(InventoryLot.remaining_quantity), 0))
+        .filter(InventoryLot.product_id == product.id)
+        .scalar()
+    )
+    available = Decimal(str(available))
+    adjustment = Decimal(str(payload.quantity))
+    if adjustment > available:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Adjustment exceeds available stock: requested {adjustment}, available {available}",
+        )
+
+    # Consume the adjustment FIFO from cost layers so lots stay authoritative.
+    remaining = adjustment
+    for lot in (
+        db.query(InventoryLot)
+        .filter(InventoryLot.product_id == product.id, InventoryLot.remaining_quantity > 0)
+        .order_by(InventoryLot.id)
+        .all()
+    ):
+        if remaining <= 0:
+            break
+        lot_qty = Decimal(str(lot.remaining_quantity))
+        take = min(lot_qty, remaining)
+        lot.remaining_quantity = lot_qty - take
+        db.add(
+            LotAllocation(
+                lot_id=lot.id,
+                product_id=product.id,
+                quantity=take,
+                unit_cost=lot.unit_cost,
+                reference_type="ADJUSTMENT",
+                reference_id=None,
+            )
+        )
+        remaining -= take
+
     movement = InventoryMovement(
         product_id=payload.product_id,
-        movement_type=payload.movement_type,
-        quantity=payload.quantity,
-        unit_cost=payload.unit_cost,
-        reference_type=payload.reference_type,
-        reference_id=payload.reference_id,
-        note=payload.note,
+        movement_type="ADJ",
+        quantity=adjustment,
+        unit_cost=Decimal(str(payload.unit_cost)),
+        reference_type="ADJUSTMENT",
+        reference_id=None,
+        note=payload.reason,
     )
     db.add(movement)
+    db.flush()
+    db.add(
+        AuditLog(
+            actor_user_id=getattr(_user, "id", None),
+            action="inventory_adjustment",
+            details=(
+                f"product_id={payload.product_id} quantity={payload.quantity} "
+                f"reason={payload.reason} movement_id={movement.id}"
+            ),
+            created_at=datetime.now(UTC),
+        )
+    )
     db.commit()
     db.refresh(movement)
     return ok({

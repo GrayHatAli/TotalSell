@@ -49,6 +49,18 @@ def test_sale_invoice_cascade(client):
     headers = login(client)
     cat_id, product_id = _seed_product(client, headers)
     customer_id = _seed_customer(client, headers)
+    supplier_id = _seed_supplier(client, headers)
+
+    # Physical products must have stock before a sale can post.
+    purchase_payload = {
+        "supplier_id": supplier_id,
+        "date": "2026-06-29T00:00:00",
+        "items": [{"product_id": product_id, "quantity": 5, "unit_cost": 50000}],
+        "payment_method": "credit",
+        "payment_status": "unpaid",
+    }
+    purchase_resp = client.post("/api/v1/purchase-invoices", json=purchase_payload, headers=headers)
+    assert purchase_resp.status_code == 200
 
     payload = {
         "customer_id": customer_id,

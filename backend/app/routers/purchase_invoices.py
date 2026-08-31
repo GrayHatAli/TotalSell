@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -50,8 +50,18 @@ def list_purchase_invoices(
 
 
 @router.post("")
-def create_purchase_invoice_endpoint(payload: PurchaseInvoiceCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
-    invoice = create_purchase_invoice(db, payload.model_dump(), user_id=getattr(_user, "id", None))
+def create_purchase_invoice_endpoint(
+    payload: PurchaseInvoiceCreate,
+    db: Session = Depends(get_db),
+    _user=Depends(get_current_user),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+):
+    if idempotency_key and not payload.idempotency_key:
+        payload.idempotency_key = idempotency_key
+    try:
+        invoice = create_purchase_invoice(db, payload, user_id=getattr(_user, "id", None))
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     data = _to_response(invoice)
     data["items"] = []
     return ok(data, meta={"id": invoice.id})

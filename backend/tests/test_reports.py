@@ -10,7 +10,18 @@ def login(client):
 def _seed_sale(client, headers):
     cat = client.post("/api/v1/categories", json={"name": "Cat"}, headers=headers).json()["meta"]["id"]
     prod = client.post("/api/v1/products", json={"name": "P1", "category_id": cat, "sale_price": 100, "cost_price": 60}, headers=headers).json()["meta"]["id"]
+    sup = client.post("/api/v1/suppliers", json={"name": "Sup"}, headers=headers).json()["meta"]["id"]
     cust = client.post("/api/v1/customers", json={"name": "Cust"}, headers=headers).json()["meta"]["id"]
+    # Physical products must have stock before a sale can post.
+    purchase = {
+        "supplier_id": sup,
+        "date": "2026-06-29T00:00:00",
+        "items": [{"product_id": prod, "quantity": 5, "unit_cost": 50000}],
+        "payment_method": "credit",
+        "payment_status": "unpaid",
+    }
+    pr = client.post("/api/v1/purchase-invoices", json=purchase, headers=headers)
+    assert pr.status_code == 200
     sale = {
         "customer_id": cust,
         "date": "2026-06-30T00:00:00",

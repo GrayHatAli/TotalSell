@@ -6,6 +6,7 @@ class LineItemBase(BaseModel):
     quantity: float
     discount_pct: float = 0
     tax_pct: float = 0
+    note: str | None = None
 
 
 class PurchaseItemCreate(LineItemBase):

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.account import Account
 from app.models.journal import JournalEntry, JournalLine
+from app.models.user import AuditLog
 
 Q = Decimal("0.01")
 
@@ -36,6 +37,60 @@ def create_manual_journal_entry(db: Session, payload: dict, user_id: int | None 
     db.commit()
     db.refresh(entry)
     return entry
+
+
+def create_reversal_entry(db: Session, entry_id: int, user_id: int | None = None, reason: str | None = None) -> JournalEntry:
+    """Create a reversing journal entry for a posted entry.
+
+    Posted entries are immutable: corrections are made by reversing entries
+    with debits and credits swapped, linked back to the original entry.
+    """
+    original = db.get(JournalEntry, entry_id)
+    if original is None:
+        raise ValueError(f"Journal entry {entry_id} not found")
+
+    existing = (
+        db.query(JournalEntry)
+        .filter(JournalEntry.reference_type == "REVERSAL", JournalEntry.reference_id == entry_id)
+        .first()
+    )
+    if existing is not None:
+        raise ValueError(f"Journal entry {entry_id} has already been reversed by entry {existing.id}")
+
+    lines = db.query(JournalLine).filter(JournalLine.entry_id == entry_id).all()
+    if not lines:
+        raise ValueError(f"Journal entry {entry_id} has no lines")
+
+    reversal = JournalEntry(
+        date=original.date,
+        description=f"Reversal of entry {entry_id}" + (f": {reason}" if reason else ""),
+        reference_type="REVERSAL",
+        reference_id=entry_id,
+        created_by=user_id,
+    )
+    db.add(reversal)
+    db.flush()
+    for line in lines:
+        db.add(
+            JournalLine(
+                entry_id=reversal.id,
+                account_id=line.account_id,
+                debit=line.credit,
+                credit=line.debit,
+                note=reason or line.note,
+            )
+        )
+    db.add(
+        AuditLog(
+            actor_user_id=user_id,
+            action="journal_entry_reversed",
+            details=f"reversal_entry_id={reversal.id} original_entry_id={entry_id}",
+            created_at=datetime.now(UTC),
+        )
+    )
+    db.commit()
+    db.refresh(reversal)
+    return reversal
 
 
 def get_trial_balance(db: Session, as_of_date: datetime | None = None) -> list[dict]:
