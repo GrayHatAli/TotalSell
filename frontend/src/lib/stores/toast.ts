@@ -1,35 +1,27 @@
 import { writable } from 'svelte/store';
 
-interface Toast {
+export interface Toast {
 	id: string;
 	message: string;
 	title?: string;
-	type?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+	type?: 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info';
 	duration?: number;
 }
 
+// Store holds an array of toasts
 const toastStore = writable<Toast[]>([]);
 
-interface ToastActions {
-	show: (options: Omit<Toast, 'id'>) => void;
-	success: (message: string, title?: string) => void;
-	error: (message: string, title?: string) => void;
-	warning: (message: string, title?: string) => void;
-	info: (message: string, title?: string) => void;
-	dismiss: (id: string) => void;
-	dismissAll: () => void;
-}
+// Extract store methods
+const { subscribe, set, update } = toastStore;
 
-const { subscribe, set, update }: any = writable<Toast[]>([]);
-
-const toast = {
+export const toast = {
 	subscribe,
 	show: (options: Omit<Toast, 'id'>) => {
-		const toast: Toast = {
+		const toastItem: Toast = {
 			id: Math.random().toString(36).substr(2, 9),
 			...options,
 		};
-		update((items) => [toast, ...items]);
+		update((items) => [toastItem, ...items]);
 	},
 	success: (message: string, title?: string) => {
 		toast.show({ message, title, type: 'success' });
@@ -50,5 +42,3 @@ const toast = {
 		set([]);
 	},
 };
-
-export default toast;

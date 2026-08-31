@@ -1,7 +1,7 @@
 # TotalSell - Design Document
 
 > **Version:** 0.1.0 (Draft)
-> **Status:** Planning Phase
+> **Status:** Architecture reference. Current MVP completion work is tracked in `PROJECT_COMPLETION_PLAN.md`.
 > **Last Updated:** 2026-06-27
 > **License:** MIT (intended for open-source release)
 
@@ -718,49 +718,51 @@ TotalSell/
 
 ## 15. Development Roadmap
 
+The checklist below reflects the current repository status as of 2026-08-24. Items marked "partial" have working code but still need the correctness, contract, or production-readiness work described in `PROJECT_COMPLETION_PLAN.md`.
+
 ### Phase 0 - Foundation
 
-- [ ] Project scaffolding (FastAPI + SvelteKit + PostgreSQL + Docker)
-- [ ] Authentication (JWT login)
-- [ ] Base database schema and Alembic setup
-- [ ] Shared API response, pagination, filtering, and error handling
-- [ ] Responsive application shell
+- [x] Project scaffolding (FastAPI + SvelteKit + PostgreSQL + Docker)
+- [x] Authentication (JWT login)
+- [x] Base database schema and Alembic setup
+- [x] Shared API response, pagination, filtering, and error handling
+- [x] Responsive application shell
 
 ### Phase 1 - Master Data
 
-- [ ] Customer management CRUD
-- [ ] Supplier management CRUD
-- [ ] Category & tag management
-- [ ] Product & service management CRUD
-- [ ] Product custom attributes and searchable indexes
+- [x] Customer management CRUD
+- [x] Supplier management CRUD
+- [x] Category & tag management
+- [x] Product & service management CRUD
+- [x] Product custom attributes and searchable indexes
 
 ### Phase 2 - Transaction Core
 
-- [ ] Bank account management
-- [ ] Purchase invoice (with auto accounting + inventory cascade)
-- [ ] Sale invoice (with auto accounting + inventory cascade)
-- [ ] Inventory tracking & movement history
-- [ ] Payment tracking with partial payment support
+- [x] Bank account management
+- [x] Purchase invoice (with auto accounting + inventory cascade) - partial
+- [x] Sale invoice (with auto accounting + inventory cascade) - partial
+- [x] Inventory tracking & movement history - partial
+- [x] Payment tracking with partial payment support - partial
 - [ ] FIFO inventory lots and stock valuation
 
 ### Phase 3 - Accounting Core
 
-- [ ] Chart of accounts + manual journal entries
-- [ ] General ledger view
-- [ ] Basic reports (P&L, balance sheet, trial balance)
+- [x] Chart of accounts + manual journal entries
+- [x] General ledger view - partial
+- [x] Basic reports (P&L, balance sheet, trial balance) - partial
 
 ### Phase 4 - Reporting and Exports
 
-- [ ] Sales & purchase reports
-- [ ] Inventory reports (low stock alerts)
-- [ ] PDF invoice generation
-- [ ] Excel report export
+- [x] Sales & purchase reports - partial
+- [x] Inventory reports (low stock alerts) - partial
+- [x] PDF invoice generation
+- [x] Excel report export
 
 ### Phase 5 - Mobile and Workflow Polish
 
-- [ ] Barcode scanner integration
-- [ ] Responsive UI (mobile-first)
-- [ ] PWA installability and offline static asset support
+- [x] Barcode scanner integration - partial
+- [x] Responsive UI (mobile-first) - partial
+- [x] PWA installability and offline static asset support - partial
 
 ### Phase 6 - Operations Enhancement
 

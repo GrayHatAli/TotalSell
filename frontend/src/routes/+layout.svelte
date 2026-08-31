@@ -8,9 +8,7 @@
 	import { fetchMe, logoutRequest } from '$lib/api/auth';
 	import { apiLogout, getRefreshToken } from '$lib/api/client';
 	import { browser } from '$app/environment';
-import Toast from '$lib/components/Toast.svelte';
-	
-	
+	import ToastContainer from '$lib/components/ToastContainer.svelte';
 
 	let sidebarOpen = false;
 	let userMenuOpen = false;
@@ -208,3 +206,5 @@ import Toast from '$lib/components/Toast.svelte';
 	</div>
 </div>
 {/if}
+
+<ToastContainer />

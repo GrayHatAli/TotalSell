@@ -62,6 +62,18 @@
 			error = e instanceof Error ? e.message : 'Delete failed';
 		}
 	}
+
+	function closeModalFromBackdrop(event: MouseEvent) {
+		if (event.target === event.currentTarget) {
+			showModal = false;
+		}
+	}
+
+	function closeModalFromKeyboard(event: KeyboardEvent) {
+		if (event.target === event.currentTarget && ['Escape', 'Enter', ' '].includes(event.key)) {
+			showModal = false;
+		}
+	}
 </script>
 
 {#key $locale}
@@ -117,7 +129,14 @@
 </div>
 
 {#if showModal}
-	<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" on:click={(e) => { if (e.target === e.currentTarget) showModal = false; }}>
+	<div
+		class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+		role="button"
+		tabindex="0"
+		aria-label="Close bank account dialog"
+		on:click={closeModalFromBackdrop}
+		on:keydown={closeModalFromKeyboard}
+	>
 		<div class="card p-6 w-full max-w-lg space-y-4">
 			<h2 class="text-xl font-semibold">{editingId ? t('common.edit') : t('common.add')} Bank Account</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

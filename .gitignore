@@ -38,3 +38,5 @@ yarn-debug.log*
 .docker/
 docker-compose.override.yml
 
+# graphify
+graphify-out/

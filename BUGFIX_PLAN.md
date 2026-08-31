@@ -1,9 +1,11 @@
 # TotalSell Bug Fix and Refactoring Plan
 
+> Historical status: this document records a completed bugfix/refactoring pass from 2026-08-07. It is not the current project completion plan. For the current MVP roadmap and remaining production work, use `PROJECT_COMPLETION_PLAN.md`.
+
 ## Overview
 This document outlines a comprehensive 6-phase plan to address bugs and implement improvements across the TotalSell codebase based on the uncommitted changes analysis.
 
-## ✅ COMPLETED - All Phases Passed Testing (34/34 tests)
+## Completed historical bugfix pass - all listed phases passed backend testing (34/34 tests)
 
 ## Phase 1: Configuration Fixes
 
@@ -371,7 +373,7 @@ git restore --source=HEAD <file>
 
 ---
 
-## ✅ PROJECT COMPLETE
+## Historical bugfix pass complete
 
 ### Implementation Summary
 
@@ -386,11 +388,13 @@ git restore --source=HEAD <file>
 | 5 | Service Logic Refactoring | ✅ Completed |
 | 6 | Testing & Verification | ✅ 34/34 tests passed |
 
-### Final Status: ALL PHASES COMPLETE ✅
+### Final Status: listed bugfix phases complete
 
 **Test Results:** 34 passed, 0 failed
 **Database Migrations:** Applied successfully
 **API Endpoints:** All verified working
+
+This completion statement applies only to the bugfix scope in this document. Known remaining MVP work includes transaction idempotency, FIFO inventory lots, payment posting, stricter financial transaction behavior, expanded reporting, and production hardening.
 
 ### Completed By: 2026-08-07
 

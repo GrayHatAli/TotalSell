@@ -2,7 +2,9 @@
 
 TotalSell is a self-hosted back-office management platform for inventory, purchasing, sales invoicing, accounting, and reporting.
 
-This repository is being rebuilt as a FastAPI, SvelteKit, and PostgreSQL application. The current implementation follows the Phase 0 foundation described in `MVP.md`.
+This repository is being rebuilt as a FastAPI, SvelteKit, and PostgreSQL application. The codebase is past the original foundation work and now contains master data, transactions, accounting, reports, exports, barcode scanning, and PWA scaffolding.
+
+The remaining MVP work is tracked in `PROJECT_COMPLETION_PLAN.md`. The most important unfinished areas are financial transaction integrity, FIFO inventory lots, payment posting, reporting completeness, and production hardening.
 
 ## Quick Start
 
@@ -27,7 +29,23 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
-pytest
+pytest -q
+```
+
+If the local virtual environment already exists, use:
+
+```bash
+cd backend
+PYTHONPATH=. .venv/bin/pytest -q
+```
+
+## Local Frontend Checks
+
+```bash
+cd frontend
+npm install
+npm run check
+npm run build
 ```
 
 ## Language Support
@@ -37,5 +55,5 @@ The frontend foundation supports English and Persian from the start. Locale, tex
 ## Project Documents
 
 - `DESIGN.md` - long-term architecture and module design
-- `MVP.md` - current Phase 0 implementation scope
-
+- `PROJECT_COMPLETION_PLAN.md` - current implementation plan for completing the MVP
+- `BUGFIX_PLAN.md` - historical bugfix/refactoring record, not the current project completion plan

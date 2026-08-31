@@ -84,6 +84,30 @@
 			error = e instanceof Error ? e.message : 'Failed to create';
 		}
 	}
+
+	function closeInvoiceModalFromBackdrop(event: MouseEvent) {
+		if (event.target === event.currentTarget) {
+			showModal = false;
+		}
+	}
+
+	function closeInvoiceModalFromKeyboard(event: KeyboardEvent) {
+		if (event.target === event.currentTarget && ['Escape', 'Enter', ' '].includes(event.key)) {
+			showModal = false;
+		}
+	}
+
+	function closeScannerFromBackdrop(event: MouseEvent) {
+		if (event.target === event.currentTarget) {
+			scannerOpen = false;
+		}
+	}
+
+	function closeScannerFromKeyboard(event: KeyboardEvent) {
+		if (event.target === event.currentTarget && ['Escape', 'Enter', ' '].includes(event.key)) {
+			scannerOpen = false;
+		}
+	}
 </script>
 
 {#key $locale}
@@ -136,7 +160,14 @@
 </div>
 
 {#if showModal}
-	<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" on:click={(e) => { if (e.target === e.currentTarget) showModal = false; }}>
+	<div
+		class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+		role="button"
+		tabindex="0"
+		aria-label="Close sale invoice dialog"
+		on:click={closeInvoiceModalFromBackdrop}
+		on:keydown={closeInvoiceModalFromKeyboard}
+	>
 		<div class="card p-6 w-full max-w-4xl space-y-4 my-8">
 			<h2 class="text-xl font-semibold">New Sale Invoice</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -209,7 +240,14 @@
 {/if}
 
 {#if scannerOpen}
-	<div class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" on:click={(e) => { if (e.target === e.currentTarget) scannerOpen = false; }}>
+	<div
+		class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+		role="button"
+		tabindex="0"
+		aria-label="Close barcode scanner"
+		on:click={closeScannerFromBackdrop}
+		on:keydown={closeScannerFromKeyboard}
+	>
 		<div class="card p-4 w-full max-w-md space-y-3">
 			<h3 class="text-lg font-semibold">Scan Barcode</h3>
 			{#if scanError}
