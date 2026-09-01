@@ -19,7 +19,7 @@ class ApiResponse(BaseModel, Generic[DataT]):
     error: ErrorInfo | None = None
 
 
-def ok(data: DataT | None = None, meta: dict[str, Any] | None = None) -> dict[str, Any]:
+def ok(data: Any = None, meta: dict[str, Any] | None = None) -> dict[str, Any]:
     return {"success": True, "data": data, "meta": meta, "error": None}
 
 

@@ -27,7 +27,7 @@ def list_categories(
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Category.name.ilike(like), Category.slug.ilike(like)))
-    sort_col = getattr(Category, sort_by, Category.name)
+    sort_col = getattr(Category, sort_by or "name", Category.name)
     query = query.order_by(sort_col.desc() if sort_dir == "desc" else sort_col.asc())
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()

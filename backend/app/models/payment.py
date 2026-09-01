@@ -13,7 +13,7 @@ class Payment(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     reference_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     reference_id: Mapped[int] = mapped_column(nullable=False, index=True)
-    amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     method: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     bank_account_id: Mapped[int | None] = mapped_column(ForeignKey("bank_accounts.id", ondelete="SET NULL"), nullable=True, index=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)

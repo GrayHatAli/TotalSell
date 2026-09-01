@@ -11,9 +11,16 @@ from app.models.sale import SaleInvoice
 from app.services.reports import _d
 from app.schemas.common import ok
 from app.schemas.customer import CustomerCreate, CustomerResponse, CustomerUpdate
+from app.schemas.payment import PaymentResponse
+from app.schemas.sale import SaleInvoiceResponse
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/customers", tags=["customers"])
+
+
+def _invoice_dict(invoice: SaleInvoice) -> dict:
+    base = {c.name: getattr(invoice, c.name) for c in SaleInvoice.__table__.columns}
+    return SaleInvoiceResponse(**base).model_dump(mode="json")
 
 
 @router.get("")
@@ -30,7 +37,7 @@ def list_customers(
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Customer.name.ilike(like), Customer.phone.ilike(like), Customer.email.ilike(like)))
-    sort_col = getattr(Customer, sort_by, Customer.name)
+    sort_col = getattr(Customer, sort_by or "name", Customer.name)
     query = query.order_by(sort_col.desc() if sort_dir == "desc" else sort_col.asc())
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
@@ -86,8 +93,8 @@ def get_customer_statement(customer_id: int, db: Session = Depends(get_db), _use
         "outstanding_balance": outstanding,
         "invoice_count": len(invoices),
         "payment_count": len(payments),
-        "invoices": [SaleInvoice.model_validate(i).model_dump(mode="json") for i in invoices],
-        "payments": [Payment.model_validate(p).model_dump(mode="json") for p in payments],
+        "invoices": [_invoice_dict(i) for i in invoices],
+        "payments": [PaymentResponse.model_validate(p).model_dump(mode="json") for p in payments],
     })
 
 

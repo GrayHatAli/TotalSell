@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.models.category import Category
+from app.models.inventory import InventoryMovement
 from app.models.product import Product
 from app.models.product_tag import ProductTag
 from app.models.tag import Tag
@@ -66,7 +67,7 @@ def list_products(
         query = query.filter(Product.product_type == product_type)
     if active is not None:
         query = query.filter(Product.active.is_(active))
-    sort_col = getattr(Product, sort_by, Product.name)
+    sort_col = getattr(Product, sort_by or "name", Product.name)
     query = query.order_by(sort_col.desc() if sort_dir == "desc" else sort_col.asc())
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
@@ -125,7 +126,7 @@ def get_product_inventory(product_id: int, db: Session = Depends(get_db), _user=
     adjustment_qty = sum(_d(m.quantity) for m in movements if m.movement_type == "ADJ")
     
     stock_on_hand = float(in_qty - out_qty)
-    total_value = float(stock_on_hand * (product.cost_price or 0))
+    total_value = float((in_qty - out_qty) * (product.cost_price or 0))
     
     return ok({
         "product": {

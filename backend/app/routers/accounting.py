@@ -64,6 +64,8 @@ def profit_loss(db: Session = Depends(get_db), _user = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="from_date and to_date are required")
     f = _parse_dt(from_date)
     t = _parse_dt(to_date)
+    if f is None or t is None:
+        raise HTTPException(status_code=400, detail="Invalid date format")
     data = get_profit_loss(db, f, t)
     return ok(data)
 

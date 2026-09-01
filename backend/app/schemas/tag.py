@@ -12,8 +12,8 @@ class TagCreate(TagBase):
     pass
 
 
-class TagUpdate(TagBase):
-    """Only allow updating name and color, with name uniqueness check"""
+class TagUpdate(BaseModel):
+    """Partial update: only allow updating name and color, with name uniqueness check"""
     name: str | None = Field(default=None, max_length=100)
     color: str | None = None
 

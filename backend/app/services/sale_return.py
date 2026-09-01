@@ -90,6 +90,8 @@ def create_sale_return(
             .filter(SaleItem.invoice_id == invoice_id, SaleItem.product_id == product_id)
             .first()
         )
+        if sale_item is None:
+            raise InvoiceError(f"Product {product_id} is not on invoice {invoice.number}")
         price = _d(sale_item.unit_price)
         tax_pct = _d(sale_item.tax_pct)
         net = qty * price

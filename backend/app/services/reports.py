@@ -4,7 +4,6 @@ from typing import Any
 
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy.orm.exc import MultipleResultsFound
 
 from app.models.category import Category
 from app.models.customer import Customer

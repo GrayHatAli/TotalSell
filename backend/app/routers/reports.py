@@ -28,6 +28,8 @@ def sales_report(db: Session = Depends(get_db), _user=Depends(get_current_user),
         raise HTTPException(status_code=400, detail="from_date and to_date are required")
     f = _parse_dt(from_date)
     t = _parse_dt(to_date)
+    if f is None or t is None:
+        raise HTTPException(status_code=400, detail="Invalid date format")
     data = get_sales_report(db, f, t)
     return ok(data)
 
@@ -38,6 +40,8 @@ def purchase_report(db: Session = Depends(get_db), _user=Depends(get_current_use
         raise HTTPException(status_code=400, detail="from_date and to_date are required")
     f = _parse_dt(from_date)
     t = _parse_dt(to_date)
+    if f is None or t is None:
+        raise HTTPException(status_code=400, detail="Invalid date format")
     data = get_purchase_report(db, f, t)
     return ok(data)
 
@@ -50,22 +54,26 @@ def inventory_report(db: Session = Depends(get_db), _user=Depends(get_current_us
 
 @router.get("/invoices/{invoice_id}/pdf")
 def invoice_pdf(invoice_id: int, db: Session = Depends(get_db), _user=Depends(get_current_user), type: str = Query(default="sale", pattern="^(sale|purchase)$")):
-    if type == "sale":
-        invoice = db.query(SaleInvoice).filter(SaleInvoice.id == invoice_id).first()
-    else:
-        invoice = db.query(PurchaseInvoice).filter(PurchaseInvoice.id == invoice_id).first()
-    if not invoice:
-        raise HTTPException(status_code=404, detail="Invoice not found")
-
     from weasyprint import HTML
     from app.models.customer import Customer
     from app.models.supplier import Supplier
 
-    party = None
-    if type == "sale" and invoice.customer_id:
-        party = db.get(Customer, invoice.customer_id)
-    elif type == "purchase" and invoice.supplier_id:
-        party = db.get(Supplier, invoice.supplier_id)
+    invoice: SaleInvoice | PurchaseInvoice
+    party: Customer | Supplier | None = None
+    if type == "sale":
+        found = db.query(SaleInvoice).filter(SaleInvoice.id == invoice_id).first()
+        if not found:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        invoice = found
+        if invoice.customer_id:
+            party = db.get(Customer, invoice.customer_id)
+    else:
+        found = db.query(PurchaseInvoice).filter(PurchaseInvoice.id == invoice_id).first()
+        if not found:
+            raise HTTPException(status_code=404, detail="Invoice not found")
+        invoice = found
+        if invoice.supplier_id:
+            party = db.get(Supplier, invoice.supplier_id)
 
     html = f"""
     <html><body><h1>Invoice #{invoice.number}</h1>
@@ -83,7 +91,7 @@ def report_excel(report_type: str, db: Session = Depends(get_db), _user=Depends(
     from io import BytesIO
 
     wb = Workbook()
-    ws = wb.active
+    ws = wb.active if wb.active is not None else wb.create_sheet()
     ws.title = report_type.capitalize()
 
     if report_type == "sales":

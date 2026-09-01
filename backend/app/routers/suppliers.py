@@ -10,10 +10,17 @@ from app.models.purchase import PurchaseInvoice
 from app.services.reports import _d
 from app.models.supplier import Supplier
 from app.schemas.common import ok
+from app.schemas.payment import PaymentResponse
+from app.schemas.purchase import PurchaseInvoiceResponse
 from app.schemas.supplier import SupplierCreate, SupplierResponse, SupplierUpdate
 from app.services.auth import get_current_user
 
 router = APIRouter(prefix="/suppliers", tags=["suppliers"])
+
+
+def _purchase_dict(invoice: PurchaseInvoice) -> dict:
+    base = {c.name: getattr(invoice, c.name) for c in PurchaseInvoice.__table__.columns}
+    return PurchaseInvoiceResponse(**base).model_dump(mode="json")
 
 
 @router.get("")
@@ -30,7 +37,7 @@ def list_suppliers(
     if search:
         like = f"%{search}%"
         query = query.filter(or_(Supplier.name.ilike(like), Supplier.phone.ilike(like), Supplier.email.ilike(like)))
-    sort_col = getattr(Supplier, sort_by, Supplier.name)
+    sort_col = getattr(Supplier, sort_by or "name", Supplier.name)
     query = query.order_by(sort_col.desc() if sort_dir == "desc" else sort_col.asc())
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
@@ -86,8 +93,8 @@ def get_supplier_statement(supplier_id: int, db: Session = Depends(get_db), _use
         "outstanding_balance": outstanding,
         "purchase_count": len(purchases),
         "payment_count": len(payments),
-        "purchases": [PurchaseInvoice.model_validate(p).model_dump(mode="json") for p in purchases],
-        "payments": [Payment.model_validate(p).model_dump(mode="json") for p in payments],
+        "purchases": [_purchase_dict(i) for i in purchases],
+        "payments": [PaymentResponse.model_validate(p).model_dump(mode="json") for p in payments],
     })
 
 

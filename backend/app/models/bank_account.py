@@ -1,4 +1,6 @@
 from datetime import datetime
+from decimal import Decimal
+
 from sqlalchemy import Boolean, DateTime, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,8 +16,8 @@ class BankAccount(TimestampMixin, Base):
     iban: Mapped[str | None] = mapped_column(String(34), nullable=True)
     account_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
     bank_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    opening_balance: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    current_balance: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    opening_balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    current_balance: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)

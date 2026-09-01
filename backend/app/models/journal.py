@@ -1,8 +1,14 @@
 from datetime import datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING
+
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.account import Account
 
 
 class JournalEntry(TimestampMixin, Base):
@@ -24,8 +30,8 @@ class JournalLine(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     entry_id: Mapped[int] = mapped_column(ForeignKey("journal_entries.id", ondelete="CASCADE"), nullable=False)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id", ondelete="RESTRICT"), nullable=False, index=True)
-    debit: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    credit: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    debit: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    credit: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     entry: Mapped[JournalEntry] = relationship(back_populates="lines")

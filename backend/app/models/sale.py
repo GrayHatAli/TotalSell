@@ -1,8 +1,16 @@
 from datetime import datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.customer import Customer
+    from app.models.product import Product
+    from app.models.user import User
 
 
 class SaleInvoice(TimestampMixin, Base):
@@ -13,12 +21,12 @@ class SaleInvoice(TimestampMixin, Base):
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id", ondelete="SET NULL"), nullable=True, index=True)
     reference_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    subtotal: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    discount_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    discount_amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    tax_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    tax_amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    total: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    discount_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    discount_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    tax_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    total: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     payment_method: Mapped[str | None] = mapped_column(String(20), nullable=True)
     payment_status: Mapped[str] = mapped_column(String(20), nullable=False, default="unpaid", index=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -44,10 +52,10 @@ class SaleReturn(TimestampMixin, Base):
     sale_invoice_id: Mapped[int] = mapped_column(ForeignKey("sale_invoices.id", ondelete="RESTRICT"), nullable=False, index=True)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     reason: Mapped[str | None] = mapped_column(Text, nullable=True)
-    subtotal: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    tax_amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    cogs_amount: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    total: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    subtotal: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    tax_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    cogs_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    total: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
     journal_entry_id: Mapped[int | None] = mapped_column(ForeignKey("journal_entries.id"), nullable=True)
     created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
 
@@ -60,11 +68,11 @@ class SaleReturnItem(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     return_id: Mapped[int] = mapped_column(ForeignKey("sale_returns.id", ondelete="CASCADE"), nullable=False, index=True)
     product_id: Mapped[int | None] = mapped_column(ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True)
-    quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    unit_price: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    tax_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    line_total: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    unit_cost: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    tax_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    line_total: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    unit_cost: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
 
     return_: Mapped[SaleReturn] = relationship(back_populates="items")
 
@@ -75,12 +83,12 @@ class SaleItem(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     invoice_id: Mapped[int] = mapped_column(ForeignKey("sale_invoices.id", ondelete="CASCADE"), nullable=False)
     product_id: Mapped[int | None] = mapped_column(ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True)
-    quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    unit_price: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    discount_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    tax_pct: Mapped[float] = mapped_column(Numeric(5, 2), nullable=False, default=0)
-    line_total: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False, default=0)
-    unit_cost: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    unit_price: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    discount_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    tax_pct: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
+    line_total: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False, default=0)
+    unit_cost: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     invoice: Mapped[SaleInvoice] = relationship(back_populates="items")

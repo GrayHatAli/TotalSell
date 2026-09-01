@@ -1,4 +1,6 @@
 from datetime import datetime
+from decimal import Decimal
+
 from sqlalchemy import Boolean, DateTime, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -14,7 +16,7 @@ class Customer(TimestampMixin, Base):
     email: Mapped[str | None] = mapped_column(String(320), nullable=True, index=True)
     national_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     customer_group: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    credit_limit: Mapped[float | None] = mapped_column(Numeric(15, 2), nullable=True)
+    credit_limit: Mapped[Decimal | None] = mapped_column(Numeric(15, 2), nullable=True)
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)

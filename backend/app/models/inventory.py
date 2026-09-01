@@ -1,4 +1,6 @@
 from datetime import datetime
+from decimal import Decimal
+
 from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -12,8 +14,8 @@ class InventoryMovement(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
     movement_type: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
-    quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    unit_cost: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     reference_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
     reference_id: Mapped[int | None] = mapped_column(nullable=True)
     note: Mapped[str | None] = mapped_column(nullable=True)
@@ -33,9 +35,9 @@ class InventoryLot(TimestampMixin, Base):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
     source_type: Mapped[str] = mapped_column(String(50), nullable=False, default="PURCHASE_INVOICE")
     source_id: Mapped[int | None] = mapped_column(nullable=True)
-    received_quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    remaining_quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    unit_cost: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    received_quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    remaining_quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     batch_number: Mapped[str | None] = mapped_column(String(100), nullable=True)
     expiry_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -47,7 +49,7 @@ class LotAllocation(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     lot_id: Mapped[int] = mapped_column(ForeignKey("inventory_lots.id", ondelete="RESTRICT"), nullable=False, index=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True)
-    quantity: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
-    unit_cost: Mapped[float] = mapped_column(Numeric(15, 2), nullable=False)
+    quantity: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
     reference_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     reference_id: Mapped[int | None] = mapped_column(nullable=True)

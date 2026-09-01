@@ -32,7 +32,7 @@ def create_manual_journal_entry(db: Session, payload: dict, user_id: int | None 
     db.flush()
 
     for line in lines_data:
-        db.add(JournalLine(entry_id=entry.id, account_id=line["account_id"], debit=float(_d(line.get("debit", 0))), credit=float(_d(line.get("credit", 0))), note=line.get("note")))
+        db.add(JournalLine(entry_id=entry.id, account_id=line["account_id"], debit=_d(line.get("debit", 0)), credit=_d(line.get("credit", 0)), note=line.get("note")))
 
     db.commit()
     db.refresh(entry)
