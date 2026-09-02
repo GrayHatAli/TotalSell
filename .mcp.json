@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "tieline": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "tieline@0.1.29",
+        "serve"
+      ],
+      "env": {
+        "TIELINE_WORKSPACE": "."
+      }
+    }
+  }
+}
