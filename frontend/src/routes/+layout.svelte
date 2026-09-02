@@ -73,11 +73,18 @@
 
 	const navItems = [
 		{ label: 'nav.dashboard', href: '/dashboard', icon: 'M4 13h6V4H4v9Zm10 7h6V4h-6v16ZM4 20h6v-5H4v5Z' },
+		{ label: 'nav.sales', href: '/sales', icon: 'M3 3v18h18M8 16v-5m4 5V8m4 8v-3' },
+		{ label: 'nav.purchases', href: '/purchases', icon: 'M6 7V6a6 6 0 1 1 12 0v1h2.2l1 14H2.8l1-14H6Zm2 0h8V6a4 4 0 0 0-8 0v1Z' },
+		{ label: 'nav.payments', href: '/payments', icon: 'M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7Zm0 3h20' },
 		{ label: 'nav.customers', href: '/customers', icon: 'M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0ZM4 20a8 8 0 0 1 16 0H4Z' },
 		{ label: 'nav.suppliers', href: '/suppliers', icon: 'M3 20h18V9l-5 3V9l-5 3V4H3v16Zm4-4h3v2H7v-2Zm6 0h3v2h-3v-2Z' },
 		{ label: 'nav.products', href: '/products', icon: 'M12 3 3.5 7.5 12 12l8.5-4.5L12 3Zm-8 7v7l8 4 8-4v-7l-8 4-8-4Z' },
 		{ label: 'nav.categories', href: '/categories', icon: 'M4 5h7v6H4V5Zm9 0h7v6h-7V5ZM4 13h7v6H4v-6Zm9 0h7v6h-7v-6Z' },
-		{ label: 'nav.tags', href: '/tags', icon: 'M4 5v6.5L12.5 20 20 12.5 11.5 4H5' }
+		{ label: 'nav.tags', href: '/tags', icon: 'M4 5v6.5L12.5 20 20 12.5 11.5 4H5' },
+		{ label: 'nav.inventory', href: '/inventory', icon: 'M16.5 9.4 7.55 4.24M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z' },
+		{ label: 'nav.bankAccounts', href: '/bank-accounts', icon: 'M3 10l9-6 9 6M5 10v8m4-8v8m6-8v8m4-8v8M3 20h18' },
+		{ label: 'nav.accounting', href: '/accounting/journal-entries', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 1 6.5 22H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z' },
+		{ label: 'nav.reports', href: '/reports', icon: 'M3 3v18h18M7 15l4-4 3 3 5-6' }
 	];
 </script>
 
@@ -90,25 +97,24 @@
 		<button
 			type="button"
 			class="fixed inset-0 z-40 bg-black/50 lg:hidden"
-			aria-label="Close navigation"
+			aria-label={t('common.closeNav')}
 			on:click={toggleSidebar}
 		></button>
 	{/if}
 
 	<!-- Sidebar -->
+	{#key $locale}
 	<aside
-		class="app-sidebar fixed lg:static inset-y-0 {$dir === 'rtl' ? 'right-0' : 'left-0'} z-50 w-72 border-r transform transition-transform duration-200 ease-in-out
+		class="app-sidebar fixed lg:static inset-y-0 {$dir === 'rtl' ? 'right-0' : 'left-0'} z-50 w-72 border-e transform transition-transform duration-200 ease-in-out
 			{sidebarOpen ? 'translate-x-0' : ($dir === 'rtl' ? 'translate-x-full' : '-translate-x-full')}
 			lg:translate-x-0 lg:relative overflow-y-auto"
 	>
 		<div class="p-5 border-b" style="border-color: var(--app-border);">
 			<div class="flex items-center gap-3">
-				<div class="grid h-11 w-11 place-items-center rounded-lg bg-teal-700 text-lg font-black text-white shadow-lg shadow-teal-900/20">
-					TS
-				</div>
-				<div class="min-w-0">
-					<h1 class="truncate text-xl font-black tracking-tight">{t('app.name')}</h1>
-					<p class="text-xs font-semibold uppercase text-muted">Back office</p>
+				<div class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-600 text-lg font-black text-white shadow-sm">T</div>
+				<div>
+					<p class="text-base font-black tracking-tight">{t('app.name')}</p>
+					<p class="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('app.tagline')}</p>
 				</div>
 			</div>
 		</div>
@@ -140,6 +146,7 @@
 			</button>
 		</div>
 	</aside>
+	{/key}
 
 	<!-- Main content -->
 	<div class="flex-1 flex flex-col min-w-0">
@@ -148,17 +155,19 @@
 			<div class="flex min-w-0 items-center gap-3">
 				<button
 					on:click={toggleSidebar}
-					class="btn lg:hidden !min-h-10 !w-10 !p-0"
-					aria-label="Toggle sidebar"
+					class="btn btn-ghost lg:hidden !min-h-10 !w-10 !p-0"
+					aria-label={t('common.toggleNav')}
 				>
 					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 					</svg>
 				</button>
-				<div class="min-w-0">
-					<p class="text-xs font-bold uppercase text-muted">{t('app.name')}</p>
-					<h2 class="truncate text-lg font-black tracking-tight">{activeNav ? t(activeNav.label) : t('app.name')}</h2>
-				</div>
+				{#key $locale}
+					<div class="min-w-0">
+						<p class="truncate text-base font-bold tracking-tight">{activeNav ? t(activeNav.label) : t('app.name')}</p>
+						<p class="text-[11px] font-semibold uppercase tracking-wider text-muted">{t('app.name')}</p>
+					</div>
+				{/key}
 			</div>
 
 			{#if $isAuthenticated}
@@ -174,24 +183,26 @@
 					</button>
 
 					{#if userMenuOpen}
+						{#key $locale}
 						<button
 							type="button"
 							class="fixed inset-0 z-10"
-							aria-label="Close user menu"
+							aria-label={t('common.closeMenu')}
 							on:click={() => { userMenuOpen = false; }}
 						></button>
 						<div class="card absolute {$dir === 'rtl' ? 'left-0' : 'right-0'} z-20 mt-2 w-56 overflow-hidden">
 							<div class="border-b px-4 py-3" style="border-color: var(--app-border);">
 								<p class="truncate text-sm font-bold">{$currentUser?.email || ''}</p>
-								<p class="text-xs text-muted">Admin</p>
+								<p class="text-xs text-muted">{t('auth.adminRole')}</p>
 							</div>
 							<button
 								on:click={handleLogout}
-								class="w-full px-4 py-3 text-start text-sm font-bold transition-colors hover:bg-rose-50 hover:text-rose-700"
+								class="w-full px-4 py-3 text-start text-sm font-bold transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950/40"
 							>
 								{t('auth.logout')}
 							</button>
 						</div>
+						{/key}
 					{/if}
 				</div>
 			{/if}

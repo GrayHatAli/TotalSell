@@ -1,21 +1,21 @@
-import { apiRequest } from './client';
+import { apiRequest, normalizeList, type ListResponse } from './client';
 
 export interface Customer {
 	id: number;
 	name: string;
-	phone?: string;
-	email?: string;
-	group?: string;
-	credit_limit?: number;
-	is_active: boolean;
+	phone?: string | null;
+	email?: string | null;
+	national_id?: string | null;
+	customer_group?: string | null;
+	credit_limit?: number | null;
+	address?: string | null;
+	notes?: string | null;
+	active: boolean;
+	created_at: string;
+	updated_at: string;
 }
 
-export interface CustomerListResponse {
-	items: Customer[];
-	total: number;
-	page: number;
-	page_size: number;
-}
+export type CustomerPayload = Omit<Customer, 'id' | 'created_at' | 'updated_at'>;
 
 export interface CustomerParams {
 	search?: string;
@@ -23,14 +23,13 @@ export interface CustomerParams {
 	page_size?: number;
 }
 
-export async function listCustomers(params: CustomerParams = {}): Promise<CustomerListResponse> {
-	const query = new URLSearchParams(params as Record<string, string>);
-	const body = await apiRequest<CustomerListResponse>(`/customers?${query}`);
-	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to fetch customers');
-	return body.data;
+export async function listCustomers(params: CustomerParams = {}): Promise<ListResponse<Customer>> {
+	const query = new URLSearchParams();
+	Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') query.set(k, String(v)); });
+	return normalizeList<Customer>(await apiRequest<Customer[]>(`/customers?${query}`));
 }
 
-export async function createCustomer(data: Omit<Customer, 'id'>): Promise<Customer> {
+export async function createCustomer(data: Partial<CustomerPayload>): Promise<Customer> {
 	const body = await apiRequest<Customer>('/customers', {
 		method: 'POST',
 		body: JSON.stringify(data)
@@ -39,9 +38,9 @@ export async function createCustomer(data: Omit<Customer, 'id'>): Promise<Custom
 	return body.data;
 }
 
-export async function updateCustomer(id: number, data: Partial<Omit<Customer, 'id'>>): Promise<Customer> {
+export async function updateCustomer(id: number, data: Partial<CustomerPayload>): Promise<Customer> {
 	const body = await apiRequest<Customer>(`/customers/${id}`, {
-		method: 'PUT',
+		method: 'PATCH',
 		body: JSON.stringify(data)
 	});
 	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to update customer');

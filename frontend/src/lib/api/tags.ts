@@ -1,21 +1,19 @@
-import { apiRequest } from './client';
+import { apiRequest, normalizeList } from './client';
 
 export interface Tag {
 	id: number;
 	name: string;
+	color?: string | null;
 }
 
-export interface TagListResponse {
-	items: Tag[];
-}
+export type TagPayload = Omit<Tag, 'id'>;
 
 export async function listTags(): Promise<Tag[]> {
-	const body = await apiRequest<TagListResponse>('/tags');
-	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to fetch tags');
-	return body.data.items;
+	const { items } = normalizeList<Tag>(await apiRequest<Tag[]>('/tags'));
+	return items;
 }
 
-export async function createTag(data: Omit<Tag, 'id'>): Promise<Tag> {
+export async function createTag(data: Partial<TagPayload>): Promise<Tag> {
 	const body = await apiRequest<Tag>('/tags', {
 		method: 'POST',
 		body: JSON.stringify(data)
@@ -24,9 +22,9 @@ export async function createTag(data: Omit<Tag, 'id'>): Promise<Tag> {
 	return body.data;
 }
 
-export async function updateTag(id: number, data: Partial<Omit<Tag, 'id'>>): Promise<Tag> {
+export async function updateTag(id: number, data: Partial<TagPayload>): Promise<Tag> {
 	const body = await apiRequest<Tag>(`/tags/${id}`, {
-		method: 'PUT',
+		method: 'PATCH',
 		body: JSON.stringify(data)
 	});
 	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to update tag');

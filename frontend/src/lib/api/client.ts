@@ -66,6 +66,29 @@ async function refreshAccessToken(): Promise<string | null> {
 	}
 }
 
+export interface ListResponse<T> {
+	items: T[];
+	total: number;
+	page: number;
+	page_size: number;
+}
+
+/**
+ * Normalize a backend list response. Backend list endpoints return
+ * `{ success, data: [...], meta: { page, page_size, total } }`.
+ */
+export function normalizeList<T>(body: ApiResponse<T[]>): ListResponse<T> {
+	if (!body.success || !body.data) {
+		throw new Error(body.error?.message || 'Request failed');
+	}
+	return {
+		items: body.data,
+		total: (body.meta?.total as number) ?? body.data.length,
+		page: (body.meta?.page as number) ?? 1,
+		page_size: (body.meta?.page_size as number) ?? body.data.length
+	};
+}
+
 export async function apiRequest<T>(
 	endpoint: string,
 	options: RequestInit = {}

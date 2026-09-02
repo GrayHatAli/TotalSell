@@ -1,19 +1,17 @@
-import { apiRequest } from './client';
+import { apiRequest, normalizeList, type ListResponse } from './client';
 
 export interface Category {
 	id: number;
 	name: string;
-	slug: string;
+	slug?: string | null;
 	parent_id?: number | null;
-	is_active: boolean;
+	image_url?: string | null;
+	active: boolean;
+	created_at: string;
+	updated_at: string;
 }
 
-export interface CategoryListResponse {
-	items: Category[];
-	total: number;
-	page: number;
-	page_size: number;
-}
+export type CategoryPayload = Omit<Category, 'id' | 'created_at' | 'updated_at'>;
 
 export interface CategoryParams {
 	search?: string;
@@ -21,14 +19,13 @@ export interface CategoryParams {
 	page_size?: number;
 }
 
-export async function listCategories(params: CategoryParams = {}): Promise<CategoryListResponse> {
-	const query = new URLSearchParams(params as Record<string, string>);
-	const body = await apiRequest<CategoryListResponse>(`/categories?${query}`);
-	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to fetch categories');
-	return body.data;
+export async function listCategories(params: CategoryParams = {}): Promise<ListResponse<Category>> {
+	const query = new URLSearchParams();
+	Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') query.set(k, String(v)); });
+	return normalizeList<Category>(await apiRequest<Category[]>(`/categories?${query}`));
 }
 
-export async function createCategory(data: Omit<Category, 'id'>): Promise<Category> {
+export async function createCategory(data: Partial<CategoryPayload>): Promise<Category> {
 	const body = await apiRequest<Category>('/categories', {
 		method: 'POST',
 		body: JSON.stringify(data)
@@ -37,9 +34,9 @@ export async function createCategory(data: Omit<Category, 'id'>): Promise<Catego
 	return body.data;
 }
 
-export async function updateCategory(id: number, data: Partial<Omit<Category, 'id'>>): Promise<Category> {
+export async function updateCategory(id: number, data: Partial<CategoryPayload>): Promise<Category> {
 	const body = await apiRequest<Category>(`/categories/${id}`, {
-		method: 'PUT',
+		method: 'PATCH',
 		body: JSON.stringify(data)
 	});
 	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to update category');

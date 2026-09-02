@@ -1,23 +1,41 @@
-import { apiRequest } from './client';
+import { apiRequest, normalizeList, type ListResponse } from './client';
+
+export interface ProductTagRef {
+	id: number;
+	name: string;
+	color?: string | null;
+}
 
 export interface Product {
 	id: number;
 	name: string;
-	sku?: string;
-	description?: string;
-	price?: number;
-	cost?: number;
-	category_id?: number;
-	category_name?: string;
-	tags?: string[];
-	is_active: boolean;
+	sku?: string | null;
+	barcode?: string | null;
+	category_id?: number | null;
+	category_name?: string | null;
+	product_type?: string | null;
+	unit?: string | null;
+	sale_price?: number | null;
+	cost_price?: number | null;
+	min_stock?: number | null;
+	active: boolean;
+	tags?: ProductTagRef[];
+	created_at: string;
+	updated_at: string;
 }
 
-export interface ProductListResponse {
-	items: Product[];
-	total: number;
-	page: number;
-	page_size: number;
+export interface ProductPayload {
+	name: string;
+	sku?: string;
+	barcode?: string;
+	category_id?: number;
+	product_type?: string;
+	unit?: string;
+	sale_price?: number;
+	cost_price?: number;
+	min_stock?: number;
+	active?: boolean;
+	tag_ids?: number[];
 }
 
 export interface ProductParams {
@@ -26,14 +44,13 @@ export interface ProductParams {
 	page_size?: number;
 }
 
-export async function listProducts(params: ProductParams = {}): Promise<ProductListResponse> {
-	const query = new URLSearchParams(params as Record<string, string>);
-	const body = await apiRequest<ProductListResponse>(`/products?${query}`);
-	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to fetch products');
-	return body.data;
+export async function listProducts(params: ProductParams = {}): Promise<ListResponse<Product>> {
+	const query = new URLSearchParams();
+	Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') query.set(k, String(v)); });
+	return normalizeList<Product>(await apiRequest<Product[]>(`/products?${query}`));
 }
 
-export async function createProduct(data: Omit<Product, 'id' | 'category_name'>): Promise<Product> {
+export async function createProduct(data: ProductPayload): Promise<Product> {
 	const body = await apiRequest<Product>('/products', {
 		method: 'POST',
 		body: JSON.stringify(data)
@@ -42,9 +59,9 @@ export async function createProduct(data: Omit<Product, 'id' | 'category_name'>)
 	return body.data;
 }
 
-export async function updateProduct(id: number, data: Partial<Omit<Product, 'id'>>): Promise<Product> {
+export async function updateProduct(id: number, data: Partial<ProductPayload>): Promise<Product> {
 	const body = await apiRequest<Product>(`/products/${id}`, {
-		method: 'PUT',
+		method: 'PATCH',
 		body: JSON.stringify(data)
 	});
 	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to update product');
