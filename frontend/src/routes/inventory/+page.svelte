@@ -13,7 +13,7 @@
 	onMount(async () => {
 		const [mov, prods] = await Promise.all([
 			listInventoryMovements({ page: 1, page_size: 100 }),
-			listProducts({ page: 1, page_size: 200 }),
+			listProducts({ page: 1, page_size: 100 }),
 		]);
 		movements = mov.items;
 		prods.items.forEach((p: any) => (productsMap[p.id] = p.name));

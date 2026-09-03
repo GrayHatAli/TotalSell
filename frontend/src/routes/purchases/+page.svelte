@@ -34,7 +34,7 @@
 		const [inv, sup, prod] = await Promise.all([
 			listPurchaseInvoices({ page: 1, page_size: 50 }),
 			listSuppliers(),
-			listProducts({ page: 1, page_size: 200 }),
+			listProducts({ page: 1, page_size: 100 }),
 		]);
 		invoices = inv;
 		suppliers = sup;
