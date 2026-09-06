@@ -11,6 +11,7 @@
 	} from '$lib/api/products';
 	import { listCategories, type Category } from '$lib/api/categories';
 	import { listTags, type Tag } from '$lib/api/tags';
+	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
 
 	let products: Product[] = [];
 	let categories: Category[] = [];
@@ -20,6 +21,8 @@
 	let showModal = false;
 	let saving = false;
 	let editingProduct: Product | null = null;
+	let scannerOpen = false;
+	let scanError = '';
 	let formData = {
 		name: '',
 		sku: '',
@@ -100,6 +103,31 @@
 
 	function closeModal() {
 		showModal = false;
+	}
+
+	function openScanner() {
+		scanError = '';
+		scannerOpen = true;
+	}
+
+	function closeScanner() {
+		scannerOpen = false;
+		scanError = '';
+	}
+
+	function handleScan(code: string) {
+		formData.barcode = code;
+		closeScanner();
+	}
+
+	function closeScannerFromBackdrop(event: MouseEvent) {
+		if (event.target === event.currentTarget) closeScanner();
+	}
+
+	function closeScannerFromKeyboard(event: KeyboardEvent) {
+		if (event.target === event.currentTarget && ['Escape', 'Enter', ' '].includes(event.key)) {
+			closeScanner();
+		}
 	}
 
 	async function handleSubmit() {
@@ -258,7 +286,13 @@
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div>
 						<label class="mb-1 block text-sm font-medium" for="prod-barcode">{t('products.barcode')}</label>
-						<input id="prod-barcode" type="text" class="input" bind:value={formData.barcode} />
+						<div class="flex gap-2">
+						<input id="prod-barcode" type="text" class="input flex-1" bind:value={formData.barcode} />
+						<button class="btn btn-sm" type="button" on:click={openScanner} title={t('products.scanBarcode')}>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v3M3 18v3M7 3h2M17 3h2M21 3v3M21 18v3M7 21h2M17 21h2M3 12h18M5 7v10M8 7v10M11 7v10M14 7v10M17 7v10M20 7v10" /></svg>
+							{t('products.scanBarcode')}
+						</button>
+					</div>
 					</div>
 					<div>
 						<label class="mb-1 block text-sm font-medium" for="prod-unit">{t('products.unit')}</label>
@@ -311,6 +345,30 @@
 				<button class="btn btn-primary" on:click={handleSubmit} disabled={saving}>
 					{saving ? t('common.saving') : t('common.save')}
 				</button>
+			</div>
+		</div>
+	</div>
+{/if}
+
+{#if scannerOpen}
+	<div
+		class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+		role="button"
+		tabindex="0"
+		aria-label="Close barcode scanner"
+		on:click={closeScannerFromBackdrop}
+		on:keydown={closeScannerFromKeyboard}
+	>
+		<div class="card p-4 w-full max-w-md space-y-3">
+			<h3 class="text-lg font-semibold">{t('products.scanTitle')}</h3>
+			{#if scanError}
+				<div class="p-2 bg-error-100 dark:bg-error-900/30 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-300 rounded text-sm">
+					{scanError}
+				</div>
+			{/if}
+			<BarcodeScanner on:scanned={(e) => handleScan(e.detail)}></BarcodeScanner>
+			<div class="flex justify-end">
+				<button class="btn variant-soft" on:click={closeScanner}>{t('products.scanClose')}</button>
 			</div>
 		</div>
 	</div>

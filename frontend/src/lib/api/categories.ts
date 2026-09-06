@@ -49,3 +49,21 @@ export async function deleteCategory(id: number): Promise<void> {
 	});
 	if (!body.success) throw new Error(body.error?.message || 'Failed to delete category');
 }
+
+export interface CategoryImportResult {
+	created: number;
+	skipped: number;
+	failed: number;
+	errors: { row: number; reason: string }[];
+}
+
+export async function importCategories(file: File): Promise<CategoryImportResult> {
+	const form = new FormData();
+	form.append('file', file);
+	const body = await apiRequest<any>('/categories/import', {
+		method: 'POST',
+		body: form
+	});
+	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to import categories');
+	return body.data;
+}

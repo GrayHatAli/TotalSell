@@ -94,10 +94,16 @@ export async function apiRequest<T>(
 	options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
 	const token = getAccessToken();
+	const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
 	const headers: Record<string, string> = {
-		'Content-Type': 'application/json',
 		...((options.headers as Record<string, string>) || {})
 	};
+
+	// For FormData bodies the browser sets the multipart Content-Type + boundary;
+	// forcing application/json would break file uploads.
+	if (!isFormData && !headers['Content-Type']) {
+		headers['Content-Type'] = 'application/json';
+	}
 
 	if (token) {
 		headers['Authorization'] = `Bearer ${token}`;
