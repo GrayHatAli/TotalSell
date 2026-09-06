@@ -167,6 +167,7 @@
 	"products.scanBarcode": "Scan barcode",
 	"products.scanTitle": "Scan Barcode",
 	"products.scanClose": "Close",
+	"barcode.start": "Start scanner",
 	"categories.subtitle": "Organize your catalog",
 	"categories.inactive": "Inactive",
 	"categories.importExcel": "Import from Excel",

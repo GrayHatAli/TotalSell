@@ -168,6 +168,7 @@
 	"products.scanBarcode": "اسکن بارکد",
 	"products.scanTitle": "اسکن بارکد",
 	"products.scanClose": "بستن",
+	"barcode.start": "شروع اسکن",
 	"categories.subtitle": "مدیریت دسته‌بندی‌ها",
 	"categories.inactive": "غیرفعال",
 	"categories.importExcel": "افزودن از فایل اکسل",
