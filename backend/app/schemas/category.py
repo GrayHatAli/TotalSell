@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 class CategoryBase(BaseModel):
     name: str = Field(..., max_length=255)
     slug: str | None = Field(default=None, max_length=255)
+    code: str | None = Field(default=None, max_length=20)
     parent_id: int | None = Field(default=None, ge=1)
     image_url: str | None = Field(default=None, max_length=500)
     active: bool = True
@@ -18,6 +19,7 @@ class CategoryCreate(CategoryBase):
 class CategoryUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=255)
     slug: str | None = Field(default=None, max_length=255)
+    code: str | None = Field(default=None, max_length=20)
     parent_id: int | None = Field(default=None, ge=1)
     image_url: str | None = Field(default=None, max_length=500)
     active: bool | None = None

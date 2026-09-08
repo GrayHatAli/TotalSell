@@ -17,6 +17,7 @@ class Product(TimestampMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    brand: Mapped[str | None] = mapped_column(String(120), nullable=True)
     sku: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True, index=True)
     barcode: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)

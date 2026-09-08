@@ -18,6 +18,7 @@
 	let formData = {
 		name: '',
 		slug: '',
+		code: '',
 		parent_id: '',
 		active: true
 	};
@@ -42,7 +43,7 @@
 
 	function openAddModal() {
 		editingCategory = null;
-		formData = { name: '', slug: '', parent_id: '', active: true };
+		formData = { name: '', slug: '', code: '', parent_id: '', active: true };
 		showModal = true;
 	}
 
@@ -51,6 +52,7 @@
 		formData = {
 			name: category.name,
 			slug: category.slug || '',
+			code: category.code || '',
 			parent_id: category.parent_id?.toString() || '',
 			active: category.active
 		};
@@ -71,6 +73,7 @@
 			const data = {
 				name: formData.name.trim(),
 				slug: formData.slug || undefined,
+				code: formData.code || undefined,
 				parent_id: formData.parent_id ? parseInt(formData.parent_id) : undefined,
 				active: formData.active
 			};
@@ -176,6 +179,7 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th>{t('categories.code')}</th>
 					<th>{t('categories.name')}</th>
 					<th>{t('categories.slug')}</th>
 					<th>{t('categories.parent')}</th>
@@ -187,16 +191,17 @@
 				{#if loading}
 					{#each Array(3) as _}
 						<tr>
-							{#each Array(5) as __}
+							{#each Array(6) as __}
 								<td><div class="skeleton h-5 w-full"></div></td>
 							{/each}
 						</tr>
 					{/each}
 				{:else if categories.length === 0}
-					<tr><td colspan="5"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
+					<tr><td colspan="6"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
 				{:else}
 					{#each categories as category}
 						<tr>
+							<td class="font-mono">{category.code || '—'}</td>
 							<td class="font-semibold">{category.name}</td>
 							<td>{category.slug || '—'}</td>
 							<td>{getParentName(category.parent_id)}</td>
@@ -231,6 +236,11 @@
 					<input id="cat-name" type="text" class="input" bind:value={formData.name} required />
 				</div>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+					<div>
+						<label class="mb-1 block text-sm font-medium" for="cat-code">{t('categories.code')}</label>
+						<input id="cat-code" type="text" class="input font-mono" bind:value={formData.code} placeholder="1210" />
+						<p class="mt-1 text-xs text-muted">{t('categories.codeHint')}</p>
+					</div>
 					<div>
 						<label class="mb-1 block text-sm font-medium" for="cat-slug">{t('categories.slug')}</label>
 						<input id="cat-slug" type="text" class="input" bind:value={formData.slug} />

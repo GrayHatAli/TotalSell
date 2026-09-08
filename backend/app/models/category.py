@@ -16,6 +16,7 @@ class Category(TimestampMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     slug: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
+    code: Mapped[str | None] = mapped_column(String(20), nullable=True, unique=True, index=True)
     parent_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False, index=True)

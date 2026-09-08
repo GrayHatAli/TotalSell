@@ -12,6 +12,7 @@
 	import { listCategories, type Category } from '$lib/api/categories';
 	import { listTags, type Tag } from '$lib/api/tags';
 	import BarcodeScanner from '$lib/components/BarcodeScanner.svelte';
+	import { onlineBarcodeLookup } from '$lib/api/barcode';
 
 	let products: Product[] = [];
 	let categories: Category[] = [];
@@ -23,8 +24,24 @@
 	let editingProduct: Product | null = null;
 	let scannerOpen = false;
 	let scanError = '';
+	let scanNote = '';
+	let scanNoteType: 'success' | 'warning' | 'error' | '' = '';
+
+	function scanNoteClass(): string {
+		switch (scanNoteType) {
+			case 'success':
+				return 'bg-success-100 dark:bg-success-900/30 border-success-300 dark:border-success-700 text-success-700 dark:text-success-300';
+			case 'warning':
+				return 'bg-warning-100 dark:bg-warning-900/30 border-warning-300 dark:border-warning-700 text-warning-700 dark:text-warning-300';
+			case 'error':
+				return 'bg-error-100 dark:bg-error-900/30 border-error-300 dark:border-error-700 text-error-700 dark:text-error-300';
+			default:
+				return '';
+		}
+	}
 	let formData = {
 		name: '',
+		brand: '',
 		sku: '',
 		barcode: '',
 		sale_price: '',
@@ -71,6 +88,7 @@
 		editingProduct = null;
 		formData = {
 			name: '',
+			brand: '',
 			sku: '',
 			barcode: '',
 			sale_price: '',
@@ -82,12 +100,15 @@
 			active: true
 		};
 		showModal = true;
+		scanNote = '';
+		scanNoteType = '';
 	}
 
 	function openEditModal(product: Product) {
 		editingProduct = product;
 		formData = {
 			name: product.name,
+			brand: product.brand || '',
 			sku: product.sku || '',
 			barcode: product.barcode || '',
 			sale_price: product.sale_price?.toString() || '',
@@ -99,6 +120,8 @@
 			active: product.active
 		};
 		showModal = true;
+		scanNote = '';
+		scanNoteType = '';
 	}
 
 	function closeModal() {
@@ -115,9 +138,45 @@
 		scanError = '';
 	}
 
-	function handleScan(code: string) {
+	async function handleScan(code: string) {
 		formData.barcode = code;
 		closeScanner();
+		scanNote = '';
+		scanNoteType = '';
+
+		// Only auto-fill when creating a brand-new product, never while editing.
+		if (editingProduct) return;
+
+		const barcode = code.trim();
+		if (!barcode) return;
+
+		scanNote = t('products.lookupChecking');
+		scanNoteType = 'warning';
+		try {
+			const res = await onlineBarcodeLookup(barcode);
+			const p = res.product;
+			if (res.found && p) {
+				const sourceLabel =
+					p.source === 'openfoodfacts'
+						? 'Open Food Facts'
+						: p.source === 'barcodenest'
+							? 'BarcodeNest'
+							: (res.source || p.source || 'online');
+				scanNote = t('products.lookupFound').replace('{source}', sourceLabel);
+				scanNoteType = 'success';
+				if (p.name && !formData.name.trim()) formData.name = p.name;
+				if (p.quantity && !formData.unit?.trim()) formData.unit = p.quantity;
+				if (p.brand && !formData.brand?.trim()) formData.brand = p.brand;
+				if (p.brand) scanNote += ' — ' + t('products.lookupBrand').replace('{brand}', p.brand);
+				if (p.category) scanNote += ' — ' + t('products.lookupCategory').replace('{category}', p.category);
+			} else {
+				scanNote = t('products.lookupNotFound');
+				scanNoteType = 'error';
+			}
+		} catch (e) {
+			scanNote = t('products.lookupError').replace('{error}', errMessage(e));
+			scanNoteType = 'error';
+		}
 	}
 
 	function closeScannerFromBackdrop(event: MouseEvent) {
@@ -208,6 +267,7 @@
 			<thead>
 				<tr>
 					<th>{t('products.name')}</th>
+					<th>{t('products.brand')}</th>
 					<th>{t('products.sku')}</th>
 					<th>{t('products.price')}</th>
 					<th>{t('products.cost')}</th>
@@ -221,17 +281,18 @@
 				{#if loading}
 					{#each Array(3) as _}
 						<tr>
-							{#each Array(8) as __}
+							{#each Array(9) as __}
 								<td><div class="skeleton h-5 w-full"></div></td>
 							{/each}
 						</tr>
 					{/each}
 				{:else if products.length === 0}
-					<tr><td colspan="8"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
+					<tr><td colspan="9"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
 				{:else}
 					{#each products as product}
 						<tr>
 							<td class="font-semibold">{product.name}</td>
+							<td>{product.brand || '—'}</td>
 							<td>{product.sku || '—'}</td>
 							<td>{product.sale_price?.toLocaleString() ?? '—'}</td>
 							<td>{product.cost_price?.toLocaleString() ?? '—'}</td>
@@ -279,26 +340,39 @@
 						<input id="prod-name" type="text" class="input" bind:value={formData.name} required />
 					</div>
 					<div>
-						<label class="mb-1 block text-sm font-medium" for="prod-sku">{t('products.sku')}</label>
-						<input id="prod-sku" type="text" class="input" bind:value={formData.sku} />
+						<label class="mb-1 block text-sm font-medium" for="prod-brand">{t('products.brand')}</label>
+						<input id="prod-brand" type="text" class="input" bind:value={formData.brand} placeholder={t('products.brandPlaceholder')} />
 					</div>
 				</div>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div>
-						<label class="mb-1 block text-sm font-medium" for="prod-barcode">{t('products.barcode')}</label>
-						<div class="flex gap-2">
-						<input id="prod-barcode" type="text" class="input flex-1" bind:value={formData.barcode} />
-						<button class="btn btn-sm" type="button" on:click={openScanner} title={t('products.scanBarcode')}>
-							<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v3M3 18v3M7 3h2M17 3h2M21 3v3M21 18v3M7 21h2M17 21h2M3 12h18M5 7v10M8 7v10M11 7v10M14 7v10M17 7v10M20 7v10" /></svg>
-							{t('products.scanBarcode')}
-						</button>
-					</div>
+						<label class="mb-1 block text-sm font-medium" for="prod-sku">
+							{t('products.sku')} <span class="text-xs font-normal text-surface-500">({t('products.skuHint')})</span>
+						</label>
+						<input id="prod-sku" type="text" class="input" bind:value={formData.sku} placeholder={t('products.skuPlaceholder')} />
 					</div>
 					<div>
 						<label class="mb-1 block text-sm font-medium" for="prod-unit">{t('products.unit')}</label>
 						<input id="prod-unit" type="text" class="input" bind:value={formData.unit} />
 					</div>
 				</div>
+				<div>
+					<label class="mb-1 block text-sm font-medium" for="prod-barcode">{t('products.barcode')}</label>
+					<div class="flex gap-2">
+						<input id="prod-barcode" type="text" class="input flex-1" bind:value={formData.barcode} />
+						<button class="btn btn-sm" type="button" on:click={openScanner} title={t('products.scanBarcode')}>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v3M3 18v3M7 3h2M17 3h2M21 3v3M21 18v3M7 21h2M17 21h2M3 12h18M5 7v10M8 7v10M11 7v10M14 7v10M17 7v10M20 7v10" /></svg>
+							{t('products.scanBarcode')}
+						</button>
+					</div>
+				</div>
+				{#if scanNote}
+					<div
+						class="p-2 rounded text-sm border {scanNoteClass()}"
+					>
+						{scanNote}
+					</div>
+				{/if}
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
 					<div>
 						<label class="mb-1 block text-sm font-medium" for="prod-price">{t('products.price')}</label>

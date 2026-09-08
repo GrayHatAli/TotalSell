@@ -8,9 +8,11 @@ from openpyxl import load_workbook
 
 from app.database import get_db
 from app.models.category import Category
+from app.models.product import Product
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 from app.schemas.common import ok
 from app.services.auth import get_current_user
+from app.services.category_codes import next_category_code
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -42,11 +44,22 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db), _use
         exists = db.query(Category).filter(Category.slug == payload.slug, Category.deleted_at.is_(None)).first()
         if exists:
             raise HTTPException(status_code=400, detail="Slug already exists")
+    parent = None
     if payload.parent_id is not None:
         parent = db.get(Category, payload.parent_id)
         if parent is None or parent.deleted_at is not None:
             raise HTTPException(status_code=400, detail="Parent category not found")
-    category = Category(**payload.model_dump())
+    code = (payload.code or "").strip() or None
+    if code:
+        # Check any row (soft-deleted included): the DB has a UNIQUE index on code.
+        if db.query(Category).filter(Category.code == code).first():
+            raise HTTPException(status_code=400, detail="Category code already exists")
+    else:
+        # Accounting-style auto numbering: 1000/2000 for roots, +100/+10/+1 per level.
+        code = next_category_code(db, parent)
+    data = payload.model_dump()
+    data["code"] = code
+    category = Category(**data)
     db.add(category)
     db.commit()
     db.refresh(category)
@@ -70,10 +83,13 @@ def import_categories(file: UploadFile = File(...), db: Session = Depends(get_db
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read the Excel file")
     ws = wb.active
-    wb.close()
     if ws is None:
+        wb.close()
         raise HTTPException(status_code=400, detail="Excel workbook has no active sheet")
+    # read_only mode streams cells lazily from the workbook's underlying ZIP
+    # archive, so every row must be materialized BEFORE wb.close().
     rows = list(ws.iter_rows(values_only=True))
+    wb.close()
     if not rows:
         raise HTTPException(status_code=400, detail="Excel file is empty")
 
@@ -123,7 +139,13 @@ def import_categories(file: UploadFile = File(...), db: Session = Depends(get_db
         if active_idx is not None and row[active_idx] is not None:
             val = str(row[active_idx]).strip().lower()
             active = val in ("1", "true", "yes", "بله", "فعال")
-        category = Category(name=name, slug=slug or None, parent_id=parent.id if parent else None, active=active)
+        category = Category(
+            name=name,
+            slug=slug or None,
+            code=next_category_code(db, parent),
+            parent_id=parent.id if parent else None,
+            active=active,
+        )
         db.add(category)
         # Flush so categories created earlier in this file are visible to the
         # parent lookup of subsequent rows (session has autoflush disabled).
@@ -160,6 +182,13 @@ def update_category(category_id: int, payload: CategoryUpdate, db: Session = Dep
         parent = db.get(Category, data["parent_id"])
         if parent is None or parent.deleted_at is not None:
             raise HTTPException(status_code=400, detail="Parent category not found")
+    if "code" in data:
+        new_code = (data["code"] or "").strip() or None
+        if new_code:
+            exists = db.query(Category).filter(Category.code == new_code, Category.id != category_id).first()
+            if exists:
+                raise HTTPException(status_code=400, detail="Category code already exists")
+        data["code"] = new_code
     for key, value in data.items():
         setattr(category, key, value)
     db.commit()
@@ -172,7 +201,17 @@ def delete_category(category_id: int, db: Session = Depends(get_db), _user=Depen
     category = db.get(Category, category_id)
     if category is None or category.deleted_at is not None:
         raise HTTPException(status_code=404, detail="Category not found")
-    category.deleted_at = datetime.now(UTC)
-    db.add(category)
+    # Hard-delete only when nothing references the category. Products and
+    # subcategories are counted INCLUDING soft-deleted ones, because their
+    # FKs still point here and hard-deleting would silently detach them.
+    has_products = db.query(Product.id).filter(Product.category_id == category_id).first() is not None
+    has_children = db.query(Category.id).filter(Category.parent_id == category_id).first() is not None
+    if has_products or has_children:
+        category.deleted_at = datetime.now(UTC)
+        db.add(category)
+        db.commit()
+        return ok({"status": "deleted"})
+    # Nothing references it: remove the row so its code goes back into the pool.
+    db.delete(category)
     db.commit()
-    return ok({"status": "deleted"})
+    return ok({"status": "deleted_permanently"})

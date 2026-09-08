@@ -24,6 +24,10 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # Optional API key for the barcodeNest.com fallback lookup service.
+    # When empty, only Open Food Facts is used for online product lookups.
+    barcodenest_api_key: str | None = None
+
     @computed_field
     @property
     def cors_origin_list(self) -> list[str | AnyHttpUrl]:

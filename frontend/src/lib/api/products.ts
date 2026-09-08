@@ -9,6 +9,7 @@ export interface ProductTagRef {
 export interface Product {
 	id: number;
 	name: string;
+	brand?: string | null;
 	sku?: string | null;
 	barcode?: string | null;
 	category_id?: number | null;
@@ -26,6 +27,7 @@ export interface Product {
 
 export interface ProductPayload {
 	name: string;
+	brand?: string;
 	sku?: string;
 	barcode?: string;
 	category_id?: number;

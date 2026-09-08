@@ -4,6 +4,7 @@ export interface Category {
 	id: number;
 	name: string;
 	slug?: string | null;
+	code?: string | null;
 	parent_id?: number | null;
 	image_url?: string | null;
 	active: boolean;

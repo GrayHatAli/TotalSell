@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
@@ -13,6 +13,8 @@ from app.services.reports import _d
 from app.schemas.common import ok
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.services.auth import get_current_user
+from app.services.barcode_lookup import lookup_barcode_online
+from app.services.category_codes import next_product_sku
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -42,6 +44,39 @@ def barcode_lookup(code: str = Query(...), db: Session = Depends(get_db), _user=
         "cost_price": float(product.cost_price or 0),
         "unit": product.unit,
     })
+
+
+@router.get("/barcode-lookup-online")
+def barcode_lookup_online(code: str = Query(...), db: Session = Depends(get_db), _user=Depends(get_current_user)):
+    """Local + online barcode lookup for the "add product" flow.
+
+    Returns a 200 with `{found: false}` when no product is found anywhere, so
+    the caller can show a friendly message instead of handling a 404.
+    """
+    local = db.query(Product).filter(
+        ((Product.sku == code) | (Product.barcode == code)),
+        Product.deleted_at.is_(None),
+    ).first()
+    if local:
+        return ok({
+            "found": True,
+            "local": True,
+            "source": "local",
+            "product": {
+                "id": local.id,
+                "name": local.name,
+                "sku": local.sku,
+                "barcode": local.barcode,
+                "sale_price": float(local.sale_price or 0),
+                "cost_price": float(local.cost_price or 0),
+                "unit": local.unit,
+            },
+        })
+
+    info = lookup_barcode_online(code)
+    if info:
+        return ok({"found": True, "local": False, "product": info})
+    return ok({"found": False, "local": False, "source": None, "product": None})
 
 
 @router.get("")
@@ -81,8 +116,14 @@ def list_products(
 @router.post("")
 def create_product(payload: ProductCreate, db: Session = Depends(get_db), _user=Depends(get_current_user)):
     tag_ids = payload.tag_ids or []
+    category = None
     if payload.category_id is not None:
-        category = db.get(Category, payload.category_id)
+        # SELECT ... FOR UPDATE so concurrent product creations for the same
+        # category generate distinct serials (no-op on SQLite, row lock on
+        # PostgreSQL). The SKU UNIQUE constraint is the final safety net.
+        category = db.execute(
+            select(Category).where(Category.id == payload.category_id).with_for_update()
+        ).scalar_one_or_none()
         if category is None or category.deleted_at is not None:
             raise HTTPException(status_code=400, detail="Category not found")
     if payload.sku:
@@ -90,6 +131,9 @@ def create_product(payload: ProductCreate, db: Session = Depends(get_db), _user=
         if exists:
             raise HTTPException(status_code=400, detail="SKU already exists")
     product_data = payload.model_dump(exclude={"tag_ids"})
+    if not product_data.get("sku") and category is not None:
+        # Auto SKU from the category's hierarchical code, e.g. 1210-0001.
+        product_data["sku"] = next_product_sku(db, category)
     product = Product(**product_data)
     if tag_ids:
         tags = db.query(Tag).filter(Tag.id.in_(tag_ids)).all()
