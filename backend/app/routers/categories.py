@@ -1,10 +1,7 @@
 from datetime import UTC, datetime
-from io import BytesIO
-
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import asc, desc, or_
 from sqlalchemy.orm import Session
-from openpyxl import load_workbook
 
 from app.database import get_db
 from app.models.category import Category
@@ -13,6 +10,7 @@ from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdat
 from app.schemas.common import ok
 from app.services.auth import get_current_user
 from app.services.category_codes import next_category_code
+from app.services.excel import read_spreadsheet_rows
 
 router = APIRouter(prefix="/categories", tags=["categories"])
 
@@ -76,22 +74,7 @@ def import_categories(file: UploadFile = File(...), db: Session = Depends(get_db
     - Rows with an existing slug are skipped as duplicates.
     - `active` accepts 1/0, "yes"/"no", "true"/"false", or leave blank (defaults active).
     """
-    if not file.filename or not file.filename.lower().endswith((".xlsx", ".xlsm")):
-        raise HTTPException(status_code=400, detail="Only .xlsx files are supported")
-    try:
-        wb = load_workbook(BytesIO(file.file.read()), read_only=True, data_only=True)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Could not read the Excel file")
-    ws = wb.active
-    if ws is None:
-        wb.close()
-        raise HTTPException(status_code=400, detail="Excel workbook has no active sheet")
-    # read_only mode streams cells lazily from the workbook's underlying ZIP
-    # archive, so every row must be materialized BEFORE wb.close().
-    rows = list(ws.iter_rows(values_only=True))
-    wb.close()
-    if not rows:
-        raise HTTPException(status_code=400, detail="Excel file is empty")
+    rows = read_spreadsheet_rows(file)
 
     header = [str(c or "").strip().lower() if c is not None else "" for c in rows[0]]
     def col_idx(*names: str) -> int | None:

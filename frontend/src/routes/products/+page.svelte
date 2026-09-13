@@ -57,6 +57,55 @@
 		return e instanceof Error ? e.message : String(e);
 	}
 
+	/**
+	 * Suggest EXISTING tags related to the product name (typed manually or
+	 * auto-filled from the barcode lookup). Matching is smarter than plain
+	 * word equality:
+	 *  (a) the whole tag name appears inside the product name, or
+	 *  (b) any word (>= 3 chars) of the tag appears as a word in the name.
+	 * Matching is case-insensitive, ignores ZWNJ and unifies Arabic
+	 * look-alikes (ي→ی, ك→ک). Already-selected tags are never suggested.
+	 */
+	function normalizeForMatch(s: string): string {
+		return s
+			.toLowerCase()
+			.replace(/\u200c/g, '')
+			.replace(/ي/g, 'ی')
+			.replace(/ك/g, 'ک')
+			.replace(/[-_]+/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function computeSuggestions(name: string, allTags: Tag[], selectedIds: number[]): Tag[] {
+		const normName = normalizeForMatch(name);
+		if (!normName) return [];
+		const nameWords = new Set(normName.split(' ').filter((w) => w.length >= 3));
+		const suggestions: Tag[] = [];
+		for (const tag of allTags) {
+			if (selectedIds.includes(tag.id)) continue;
+			const normTag = normalizeForMatch(tag.name);
+			if (!normTag || normTag.length < 3) continue;
+			if (normName.includes(normTag)) {
+				suggestions.push(tag);
+				continue;
+			}
+			const tagWords = normTag.split(' ').filter((w) => w.length >= 3);
+			if (tagWords.some((w) => nameWords.has(w))) {
+				suggestions.push(tag);
+			}
+		}
+		return suggestions;
+	}
+
+	$: suggestedTags = computeSuggestions(formData.name, tags, formData.selectedTagIds);
+
+	function addSuggestedTag(id: number) {
+		if (!formData.selectedTagIds.includes(id)) {
+			formData.selectedTagIds = [...formData.selectedTagIds, id];
+		}
+	}
+
 	async function loadProducts() {
 		loading = true;
 		try {
@@ -176,16 +225,6 @@
 		} catch (e) {
 			scanNote = t('products.lookupError').replace('{error}', errMessage(e));
 			scanNoteType = 'error';
-		}
-	}
-
-	function closeScannerFromBackdrop(event: MouseEvent) {
-		if (event.target === event.currentTarget) closeScanner();
-	}
-
-	function closeScannerFromKeyboard(event: KeyboardEvent) {
-		if (event.target === event.currentTarget && ['Escape', 'Enter', ' '].includes(event.key)) {
-			closeScanner();
 		}
 	}
 
@@ -328,9 +367,7 @@
 </div>
 
 {#if showModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-overlay" on:click={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
+	<div class="modal-overlay">
 		<div class="modal-panel max-w-lg p-6" role="dialog" aria-modal="true">
 			<h2 class="text-lg font-bold">{editingProduct ? t('products.edit') : t('products.add')}</h2>
 			<div class="mt-4 space-y-4">
@@ -407,6 +444,23 @@
 								</label>
 							{/each}
 						</div>
+						{#if suggestedTags.length > 0}
+							<div class="mt-2">
+								<span class="mb-1 block text-xs font-medium text-muted">{t('products.suggestedTags')}</span>
+								<div class="flex flex-wrap gap-2">
+									{#each suggestedTags as tag (tag.id)}
+										<button
+											type="button"
+											class="badge variant-soft-secondary cursor-pointer"
+											title={t('products.addSuggestedTag')}
+											on:click={() => addSuggestedTag(tag.id)}
+										>
+											+ {tag.name}
+										</button>
+									{/each}
+								</div>
+							</div>
+						{/if}
 					</div>
 				</div>
 				<label class="flex items-center gap-2 text-sm font-medium">
@@ -425,14 +479,7 @@
 {/if}
 
 {#if scannerOpen}
-	<div
-		class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
-		role="button"
-		tabindex="0"
-		aria-label="Close barcode scanner"
-		on:click={closeScannerFromBackdrop}
-		on:keydown={closeScannerFromKeyboard}
-	>
+	<div class="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
 		<div class="card p-4 w-full max-w-md space-y-3">
 			<h3 class="text-lg font-semibold">{t('products.scanTitle')}</h3>
 			{#if scanError}

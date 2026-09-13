@@ -22,6 +22,38 @@
 		parent_id: '',
 		active: true
 	};
+	let selected: number[] = [];
+
+	function toggleSelected(id: number) {
+		selected = selected.includes(id) ? selected.filter((s) => s !== id) : [...selected, id];
+	}
+
+	function allFilteredSelected(): boolean {
+		return categories.length > 0 && categories.every((c) => selected.includes(c.id));
+	}
+
+	function toggleSelectAll() {
+		if (allFilteredSelected()) {
+			selected = selected.filter((id) => !categories.some((c) => c.id === id));
+		} else {
+			selected = [...new Set([...selected, ...categories.map((c) => c.id)])];
+		}
+	}
+
+	async function deleteSelected() {
+		if (selected.length === 0) return;
+		if (!confirm(t('common.confirmDelete'))) return;
+		const ids = [...selected];
+		const results = await Promise.allSettled(ids.map((id) => deleteCategory(id)));
+		const failedCount = results.filter((r) => r.status === 'rejected').length;
+		if (failedCount === 0) {
+			toast.success(t('toast.deleteSuccess'));
+		} else {
+			toast.error(t('common.deleteFailed'), t('common.error'));
+		}
+		selected = [];
+		await loadCategories();
+	}
 
 	function errMessage(e: unknown): string {
 		return e instanceof Error ? e.message : String(e);
@@ -32,6 +64,7 @@
 		try {
 			const response = await listCategories({ search });
 			categories = response.items;
+			selected = [];
 		} catch (e) {
 			toast.error(errMessage(e), t('common.error'));
 		} finally {
@@ -164,6 +197,11 @@
 		</div>
 		<div class="flex items-center gap-2">
 			<input type="text" placeholder="{t('common.search')}..." class="input !w-56" bind:value={search} on:input={onSearch} />
+			{#if selected.length > 0}
+				<button class="btn btn-danger" on:click={deleteSelected}>
+					{t('common.deleteSelected')} ({selected.length})
+				</button>
+			{/if}
 			<button class="btn" on:click={openImportModal}>
 				<svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l4 0v-4l3 4v4l3-4v-4l3 4v4l4 0M9 6h2l2 6h2M13 14h1M14 14v-4" /></svg>
 				{t('categories.importExcel')}
@@ -179,6 +217,9 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th class="w-10">
+						<input type="checkbox" checked={allFilteredSelected()} on:change={toggleSelectAll} aria-label={t('common.selectPage')} />
+					</th>
 					<th>{t('categories.code')}</th>
 					<th>{t('categories.name')}</th>
 					<th>{t('categories.slug')}</th>
@@ -191,16 +232,24 @@
 				{#if loading}
 					{#each Array(3) as _}
 						<tr>
-							{#each Array(6) as __}
+							{#each Array(7) as __}
 								<td><div class="skeleton h-5 w-full"></div></td>
 							{/each}
 						</tr>
 					{/each}
 				{:else if categories.length === 0}
-					<tr><td colspan="6"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
+					<tr><td colspan="7"><div class="empty-state"><p class="text-sm font-medium">{t('common.noResults')}</p></div></td></tr>
 				{:else}
 					{#each categories as category}
 						<tr>
+							<td>
+								<input
+									type="checkbox"
+									checked={selected.includes(category.id)}
+									on:change={() => toggleSelected(category.id)}
+									aria-label={t('common.deleteSelected')}
+								/>
+							</td>
 							<td class="font-mono">{category.code || '—'}</td>
 							<td class="font-semibold">{category.name}</td>
 							<td>{category.slug || '—'}</td>
@@ -225,9 +274,7 @@
 </div>
 
 {#if showModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-overlay" on:click={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
+	<div class="modal-overlay">
 		<div class="modal-panel max-w-md p-6" role="dialog" aria-modal="true">
 			<h2 class="text-lg font-bold">{editingCategory ? t('categories.edit') : t('categories.add')}</h2>
 			<div class="mt-4 space-y-4">
@@ -273,9 +320,7 @@
 {/if}
 
 {#if showImport}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-overlay" on:click={(e) => { if (e.target === e.currentTarget) closeImportModal(); }}>
+	<div class="modal-overlay">
 		<div class="modal-panel max-w-md p-6" role="dialog" aria-modal="true">
 			<h2 class="text-lg font-bold">{t('categories.importTitle')}</h2>
 			<p class="mt-1 text-sm text-muted">{t('categories.importDescription')}</p>

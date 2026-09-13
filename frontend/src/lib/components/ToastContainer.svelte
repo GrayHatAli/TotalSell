@@ -3,6 +3,7 @@
 	import type { Toast as ToastItem } from '$lib/stores/toast';
 	import Toast from './Toast.svelte';
 	import { onMount } from 'svelte';
+	import { dir } from '$lib/i18n';
 
 	let toasts: ToastItem[] = [];
 	let unsubscribe: () => void;
@@ -19,7 +20,8 @@
 </script>
 
 {#if toasts.length > 0}
-	<div class="fixed top-0 left-1/2 z-50 mt-4 -translate-x-1/2 space-y-2 pointer-events-none sm:mt-6 sm:space-y-3">
+	<!-- Bottom inline-end corner: bottom-left in Persian (rtl), bottom-right in English. -->
+	<div class="fixed bottom-4 z-50 space-y-2 pointer-events-none {$dir === 'rtl' ? 'left-4' : 'right-4'}">
 		{#each toasts as toastItem (toastItem.id)}
 			<div class="pointer-events-auto">
 				<Toast
@@ -28,7 +30,7 @@
 					title={toastItem.title}
 					type={toastItem.type}
 					duration={toastItem.duration ?? 3000}
-					placement="top"
+					placement="bottom"
 					on:close={handleClose}
 				/>
 			</div>

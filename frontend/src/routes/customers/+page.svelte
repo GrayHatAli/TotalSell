@@ -202,9 +202,7 @@
 </div>
 
 {#if showModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-overlay" on:click={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
+	<div class="modal-overlay">
 		<div class="modal-panel max-w-md p-6" role="dialog" aria-modal="true">
 			<h2 class="text-lg font-bold">
 				{editingCustomer ? t('customers.edit') : t('customers.add')}

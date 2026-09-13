@@ -91,7 +91,10 @@
 {#if isLoginPage}
 	<slot />
 {:else}
-<div class="app-shell flex h-screen overflow-hidden {$dir === 'rtl' ? 'flex-row-reverse' : ''}">
+<div class="app-shell flex h-screen overflow-hidden">
+	<!-- NOTE: no flex-row-reverse here. CSS flex `row` already starts from the
+	     right when the document is dir=rtl, so the sidebar (first child) sticks
+	     to the right edge in Persian and the left edge in English. -->
 	<!-- Mobile overlay -->
 	{#if sidebarOpen}
 		<button

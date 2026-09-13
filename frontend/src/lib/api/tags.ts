@@ -37,3 +37,21 @@ export async function deleteTag(id: number): Promise<void> {
 	});
 	if (!body.success) throw new Error(body.error?.message || 'Failed to delete tag');
 }
+
+export interface TagImportResult {
+	created: number;
+	skipped: number;
+	failed: number;
+	errors: { row: number; reason: string }[];
+}
+
+export async function importTags(file: File): Promise<TagImportResult> {
+	const form = new FormData();
+	form.append('file', file);
+	const body = await apiRequest<any>('/tags/import', {
+		method: 'POST',
+		body: form
+	});
+	if (!body.success || !body.data) throw new Error(body.error?.message || 'Failed to import tags');
+	return body.data;
+}
